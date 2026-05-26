@@ -9,7 +9,7 @@ import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.EmpleadoRepository;
 import com.backend.styleFactory.repository.ReservaRepository;
 import com.backend.styleFactory.repository.ServicioRepository;
-import com.backend.styleFactory.repository.UsuarioRespository;
+import com.backend.styleFactory.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -23,16 +23,16 @@ import java.util.stream.Collectors;
 public class ReservaService {
 
     private final ReservaRepository reservaRepository;
-    private final UsuarioRespository usuarioRespository;
+    private final UsuarioRepository usuarioRepository;
     private final EmpleadoRepository empleadoRepository;
     private final ServicioRepository servicioRepository;
 
     public ReservaService(ReservaRepository reservaRepository,
-                          UsuarioRespository usuarioRespository,
+                          UsuarioRepository usuarioRepository,
                           EmpleadoRepository empleadoRepository,
                           ServicioRepository servicioRepository) {
         this.reservaRepository = reservaRepository;
-        this.usuarioRespository = usuarioRespository;
+        this.usuarioRepository = usuarioRepository;
         this.empleadoRepository = empleadoRepository;
         this.servicioRepository = servicioRepository;
     }
@@ -51,7 +51,7 @@ public class ReservaService {
     }
 
     public ReservaResponseDTO save(ReservaRequestDTO dto) {
-        Usuario usuario = usuarioRespository.findById(dto.getUsuarioId()).orElse(null);
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId()).orElse(null);
         Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId()).orElse(null);
         Servicio servicio = servicioRepository.findById(dto.getServicioId()).orElse(null);
 
@@ -69,7 +69,7 @@ public class ReservaService {
         Reserva existente = reservaRepository.findById(id).orElse(null);
         if (existente == null) return null;
 
-        Usuario usuario = usuarioRespository.findById(dto.getUsuarioId()).orElse(null);
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId()).orElse(null);
         Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId()).orElse(null);
         Servicio servicio = servicioRepository.findById(dto.getServicioId()).orElse(null);
 
