@@ -18,7 +18,13 @@ public class UsuarioService {
         this.usuarioRepository = usuarioRepository;
     }
 
-    // Crear usuario
+    /**
+     * Crea un nuevo usuario validando que el correo no esté ya registrado.
+     *
+     * @param dto Datos del usuario a crear.
+     * @return UsuarioResponseDTO con los datos del usuario guardado.
+     * @throws RuntimeException si el correo ya existe.
+     */
     public UsuarioResponseDTO crearUsuario(UsuarioRequestDTO dto) {
         if (usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("Ya existe un usuario con ese correo");
@@ -31,12 +37,15 @@ public class UsuarioService {
                 dto.getRol(),
                 true
         );
-
         Usuario guardado = usuarioRepository.save(usuario);
         return mapearAResponse(guardado);
     }
 
-    // Listar todos los usuarios activos
+    /**
+     * Lista todos los usuarios activos (estado = true).
+     *
+     * @return Lista de UsuarioResponseDTO.
+     */
     public List<UsuarioResponseDTO> listarUsuarios() {
         return usuarioRepository.findByEstadoTrue()
                 .stream()
@@ -44,17 +53,37 @@ public class UsuarioService {
                 .collect(Collectors.toList());
     }
 
-    // Obtener por ID
+    /**
+     * Busca un usuario por su ID.
+     *
+     * @param id Identificador del usuario.
+     * @return UsuarioResponseDTO correspondiente.
+     * @throws RuntimeException si el usuario no existe.
+     */
     public UsuarioResponseDTO obtenerPorId(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
         return mapearAResponse(usuario);
     }
 
-    // Actualizar usuario
+    /**
+     * Actualiza los datos de un usuario existente.
+     * Si se cambia el correo, verifica que el nuevo correo no esté siendo usado por otro usuario.
+     *
+     * @param id  ID del usuario a actualizar.
+     * @param dto Datos nuevos del usuario.
+     * @return UsuarioResponseDTO actualizado.
+     * @throws RuntimeException si el usuario no existe o si el correo ya está en uso.
+     */
     public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
+
+        // Validación de correo duplicado (excluyendo al propio usuario)
+        if (!usuario.getCorreo().equals(dto.getCorreo()) &&
+                usuarioRepository.existsByCorreo(dto.getCorreo())) {
+            throw new RuntimeException("El correo ya está en uso por otro usuario");
+        }
 
         usuario.setNombre(dto.getNombre());
         usuario.setCorreo(dto.getCorreo());
@@ -66,7 +95,12 @@ public class UsuarioService {
         return mapearAResponse(actualizado);
     }
 
-    // Soft delete — no borra de la BD, solo desactiva
+    /**
+     * Realiza un borrado lógico del usuario (estado = false).
+     *
+     * @param id ID del usuario a desactivar.
+     * @throws RuntimeException si el usuario no existe.
+     */
     public void eliminarUsuario(Long id) {
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
