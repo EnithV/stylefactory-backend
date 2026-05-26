@@ -1,13 +1,16 @@
 package com.backend.styleFactory.model;
 
-
 import jakarta.persistence.*;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
+import java.util.Collection;
 import java.util.List;
 
 @Entity
 @Table(name = "usuarios")
-public class Usuario {
+public class Usuario implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,7 +20,7 @@ public class Usuario {
     @Column(nullable = false, length = 200)
     private String nombre;
 
-    @Column(nullable = false,length = 200, unique = true)
+    @Column(nullable = false, length = 200, unique = true)
     private String correo;
 
     @Column(nullable = false, length = 20)
@@ -33,14 +36,7 @@ public class Usuario {
     @Column(nullable = false)
     private boolean estado = true;
 
-//    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-//    private Empleado empleado;
-//
-//    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-//    private List<Reserva> reservas;
-
-    public Usuario() {
-    }
+    public Usuario() {}
 
     public Usuario(String nombre, String correo, String telefono, String contrasena, RolUsuario rol, boolean estado) {
         this.nombre = nombre;
@@ -51,55 +47,57 @@ public class Usuario {
         this.estado = estado;
     }
 
-    public Long getId() {
-        return id;
+    // Métodos de acceso originales (getters y setters)
+    public Long getId() { return id; }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getCorreo() { return correo; }
+    public void setCorreo(String correo) { this.correo = correo; }
+    public String getTelefono() { return telefono; }
+    public void setTelefono(String telefono) { this.telefono = telefono; }
+    public String getContrasena() { return contrasena; }
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; }
+    public RolUsuario getRol() { return rol; }
+    public void setRol(RolUsuario rol) { this.rol = rol; }
+    public boolean isEstado() { return estado; }
+    public void setEstado(boolean estado) { this.estado = estado; }
+
+    // ─────────────────────────────────────────────
+    // Implementación de UserDetails
+    // ─────────────────────────────────────────────
+
+    @Override
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return List.of(new SimpleGrantedAuthority("ROLE_" + rol.name()));
     }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getCorreo() {
-        return correo;
-    }
-
-    public void setCorreo(String correo) {
-        this.correo = correo;
-    }
-
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public String getContrasena() {
+    @Override
+    public String getPassword() {
         return contrasena;
     }
 
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
+    @Override
+    public String getUsername() {
+        return correo;
     }
 
-    public RolUsuario getRol() {
-        return rol;
+    @Override
+    public boolean isAccountNonExpired() {
+        return true;
     }
 
-    public void setRol(RolUsuario rol) {
-        this.rol = rol;
-    }
-
-    public boolean isEstado() {
+    @Override
+    public boolean isAccountNonLocked() {
         return estado;
     }
 
-    public void setEstado(boolean estado) {
-        this.estado = estado;
+    @Override
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return estado;
     }
 }
