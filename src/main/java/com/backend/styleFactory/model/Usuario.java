@@ -38,11 +38,11 @@ public class Usuario implements UserDetails {
     @Column(nullable = false)
     private boolean estado = true;
 
-//    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
-//    private Empleado empleado;
-//
-//    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
-//    private List<Reserva> reservas;
+    @OneToOne(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private Empleado empleado;
+
+    @OneToMany(mappedBy = "usuario", cascade = CascadeType.ALL)
+    private List<Reserva> reservas;
 
     public Usuario() {
     }
