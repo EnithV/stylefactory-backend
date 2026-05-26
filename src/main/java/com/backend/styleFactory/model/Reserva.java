@@ -10,8 +10,8 @@ import java.time.LocalTime;
  * Una reserva asocia a un cliente (usuario), un empleado (estilista) y un servicio
  * en una fecha y hora determinadas, y posee un estado que indica su situación actual.
  *
- * @author (tu nombre)
- * @version 1.1
+ * @author Enith (o tu nombre real)
+ * @version 1.2
  */
 @Entity
 @Table(name = "reservas")
@@ -77,25 +77,134 @@ public class Reserva {
         this.servicio = servicio;
     }
 
-    // Métodos de acceso (Getters y Setters)
+    // ─────────────────────────────────────────────
+    // Getters y Setters
+    // ─────────────────────────────────────────────
 
-    public Long getId() { return id; }
+    /**
+     * Obtiene el identificador único de la reserva.
+     *
+     * @return id de la reserva
+     */
+    public Long getId() {
+        return id;
+    }
 
-    public LocalDate getFecha() { return fecha; }
-    public void setFecha(LocalDate fecha) { this.fecha = fecha; }
+    /**
+     * Establece el identificador de la reserva.
+     * Utilizado principalmente en pruebas unitarias.
+     *
+     * @param id Identificador a asignar
+     */
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public LocalTime getHora() { return hora; }
-    public void setHora(LocalTime hora) { this.hora = hora; }
+    /**
+     * Obtiene la fecha en que se agenda la reserva.
+     *
+     * @return fecha de la reserva
+     */
+    public LocalDate getFecha() {
+        return fecha;
+    }
 
-    public String getEstado() { return estado; }
-    public void setEstado(String estado) { this.estado = estado; }
+    /**
+     * Define la fecha de la reserva.
+     *
+     * @param fecha nueva fecha
+     */
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
 
-    public Usuario getUsuario() { return usuario; }
-    public void setUsuario(Usuario usuario) { this.usuario = usuario; }
+    /**
+     * Obtiene la hora asignada a la reserva.
+     *
+     * @return hora de la reserva
+     */
+    public LocalTime getHora() {
+        return hora;
+    }
 
-    public Empleado getEmpleado() { return empleado; }
-    public void setEmpleado(Empleado empleado) { this.empleado = empleado; }
+    /**
+     * Define la hora de la reserva.
+     *
+     * @param hora nueva hora
+     */
+    public void setHora(LocalTime hora) {
+        this.hora = hora;
+    }
 
-    public Servicio getServicio() { return servicio; }
-    public void setServicio(Servicio servicio) { this.servicio = servicio; }
+    /**
+     * Obtiene el estado actual de la reserva.
+     *
+     * @return estado de la reserva (PENDIENTE, CONFIRMADA, etc.)
+     */
+    public String getEstado() {
+        return estado;
+    }
+
+    /**
+     * Actualiza el estado de la reserva.
+     *
+     * @param estado nuevo estado
+     */
+    public void setEstado(String estado) {
+        this.estado = estado;
+    }
+
+    /**
+     * Obtiene el cliente que realizó la reserva.
+     *
+     * @return usuario asociado
+     */
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    /**
+     * Asigna el cliente a la reserva.
+     *
+     * @param usuario cliente
+     */
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    /**
+     * Obtiene el estilista asignado.
+     *
+     * @return empleado estilista
+     */
+    public Empleado getEmpleado() {
+        return empleado;
+    }
+
+    /**
+     * Asigna el estilista a la reserva.
+     *
+     * @param empleado estilista
+     */
+    public void setEmpleado(Empleado empleado) {
+        this.empleado = empleado;
+    }
+
+    /**
+     * Obtiene el servicio contratado.
+     *
+     * @return servicio reservado
+     */
+    public Servicio getServicio() {
+        return servicio;
+    }
+
+    /**
+     * Asigna el servicio a la reserva.
+     *
+     * @param servicio servicio
+     */
+    public void setServicio(Servicio servicio) {
+        this.servicio = servicio;
+    }
 }

@@ -1,12 +1,11 @@
 package com.backend.styleFactory.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 @Entity
 @Table(name = "empleados")
 public class Empleado {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,7 +20,7 @@ public class Empleado {
     @Column(nullable = false)
     private Boolean estado;
 
-    @Column(nullable = false, length=300)
+    @Column(nullable = false, length = 300)
     private String url;
 
     public Empleado() {
@@ -36,6 +35,10 @@ public class Empleado {
 
     public Long getId() {
         return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public Usuario getUsuario() {
