@@ -1,6 +1,6 @@
 package com.backend.styleFactory.service;
 
-import com.backend.styleFactory.DTO.ServiceResponseDTO;
+import com.backend.styleFactory.DTO.ServicioResponseDTO;
 import com.backend.styleFactory.model.Servicio;
 import com.backend.styleFactory.repository.ServicioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,40 +13,52 @@ import java.util.stream.Collectors;
 public class ServicioService {
 
     @Autowired
-    private final ServicioRepository serviceRepository;
+    private final ServicioRepository servicioRepository;
 
-    public ServicioService(ServicioRepository serviceRepository){
-        this.serviceRepository = serviceRepository;
+    public ServicioService(ServicioRepository servicioRepository){
+        this.servicioRepository = servicioRepository;
     }
 
-    public List<ServiceResponseDTO> findAll(){
-        return serviceRepository.findAll()
-                .stream().map(ServiceResponseDTO::desde)
+    public List<ServicioResponseDTO> findAll(){
+        return servicioRepository.findAll()
+                .stream().map(ServicioResponseDTO::desde)
                 .collect(Collectors.toList());
     }
 
-    public ServiceResponseDTO findById(Long id){
-        Servicio servicio = serviceRepository.findById(id).orElse(null);
+    public ServicioResponseDTO findById(Long id){
+        Servicio servicio = servicioRepository.findById(id).orElse(null);
         if (servicio == null) return null;
-        return ServiceResponseDTO.desde(servicio);
+        return ServicioResponseDTO.desde(servicio);
     }
 
-    //public ServiceResponseDTO save(ServiceResponseDTO dto){
-       // Usuario usuario = usuarioRepository.findById((dto.getUsuarioId()).orElse(null)
-    //}
+    public ServicioResponseDTO save(ServicioResponseDTO dto){
+            if (servicioRepository.existsByNombre(dto.getNombre())){
+                throw new RuntimeException("Ya existe un servicio con ese nombre");
+            }
+            Servicio servicio = new Servicio(
+                    dto.getNombre(),
+                    dto.getDescripcion(),
+                    dto.getUrlImagen(),
+                    dto.getPrecio(),
+                    dto.getTipoServicio(),
+                    true
+            );
+        return ServicioResponseDTO.desde(servicioRepository.save(servicio));
+    }
 
-//    public ServiceResponseDTO update(Long id, ServiceResponseDTO dto){
-//        Servicio existente = serviceRepository.findById(id).orElse(null);
-//        if (existente == null) return null;
-//        existente.setNombre(dto.getNombre());
-//        existente.setDescripcion(dto.getDescripcion());
-//        existente.setUrlImagen(dto.getUrlImagen());
-//        existente.setPrecio(dto.getPrecio());
-//        existente.setTipoServico(dto.getTipoServico());
-//        return serviceRepository.save(existente);
-//    }
+    public ServicioResponseDTO update(Long id, ServicioResponseDTO dto){
+        Servicio existente = servicioRepository.findById(id).orElse(null);
+        if (existente == null) return null;
+        existente.setNombre(dto.getNombre());
+        existente.setDescripcion(dto.getDescripcion());
+        existente.setUrlImagen(dto.getUrlImagen());
+        existente.setPrecio(dto.getPrecio());
+        existente.setTipoServicio(dto.getTipoServicio());
+        existente.setEstado(dto.isEstado());
+        return ServicioResponseDTO.desde(servicioRepository.save(existente));
+    }
 
     public void delete(Long id){
-        serviceRepository.deleteById(id);
+        servicioRepository.deleteById(id);
     }
 }

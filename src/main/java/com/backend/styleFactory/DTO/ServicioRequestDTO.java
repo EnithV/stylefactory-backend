@@ -1,9 +1,8 @@
 package com.backend.styleFactory.DTO;
 
-import jakarta.persistence.Column;
 import jakarta.validation.constraints.*;
 
-public class ServiceRequestDTO {
+public class ServicioRequestDTO {
     @NotNull(message = "El nombre del servicio es obligatorio")
     private String nombre;
     @NotNull(message = "la descripcion del servicio es obligatoria")
@@ -14,9 +13,9 @@ public class ServiceRequestDTO {
     @NotNull(message = "El precio del servicio es obligatorio")
     private Double precio;
     @NotNull(message = "El tipo de servicio es obligatorio")
-    private String tipoServico;
+    private String tipoServicio;
 
-    public ServiceRequestDTO() {
+    public ServicioRequestDTO() {
     }
 
     public String getNombre() {
@@ -59,11 +58,11 @@ public class ServiceRequestDTO {
         this.precio = precio;
     }
 
-    public String getTipoServico() {
-        return tipoServico;
+    public String getTipoServicio() {
+        return tipoServicio;
     }
 
-    public void setTipoServico(String tipoServico) {
-        this.tipoServico = tipoServico;
+    public void setTipoServicio(String tipoServico) {
+        this.tipoServicio = tipoServico;
     }
 }

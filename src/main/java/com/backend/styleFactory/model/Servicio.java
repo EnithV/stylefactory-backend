@@ -3,19 +3,22 @@ package com.backend.styleFactory.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Table(name = "servicios")
 public class Servicio {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id_servicio")
-    private Long idServico;
+    private Long idServicio;
 
     @NotBlank(message = "El nombre no puede estar vacío")
     @Column(nullable = false, length = 200)
     private String nombre;
 
-    @NotBlank(message = "El descripcion no puede estar vacío")
+    @NotBlank(message = "La descripcion no puede estar vacío")
     @Column(nullable = false)
     private String descripcion;
 
@@ -31,29 +34,31 @@ public class Servicio {
     @Column( nullable = false)
     private Double precio;
 
-    @NotBlank(message = "La tipo de servicio es obligatorio")
+    @NotBlank(message = "El tipo de servicio es obligatorio")
     @Column(name = "tipo", nullable = false, length = 200)
-    private String tipoServico;
+    private String tipoServicio;
+
+//    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
+//    private List<Reserva> reservas = new ArrayList<>();
 
     public Servicio() {
     }
 
-    public Servicio(Long idServico, String nombre, String descripcion, String urlImagen, boolean estado, Double precio, String tipoServico) {
-        this.idServico = idServico;
+    public Servicio( String nombre, String descripcion, String urlImagen, Double precio, String tipoServicio, boolean estado) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.urlImagen = urlImagen;
-        this.estado = estado;
         this.precio = precio;
-        this.tipoServico = tipoServico;
+        this.tipoServicio = tipoServicio;
+        this.estado = estado;
     }
 
-    public Long getIdServico() {
-        return idServico;
+    public Long getIdServicio() {
+        return idServicio;
     }
 
-    public void setIdServico(Long idServico) {
-        this.idServico = idServico;
+    public void setIdServicio(Long idServicio) {
+        this.idServicio = idServicio;
     }
 
     public String getNombre() {
@@ -96,12 +101,12 @@ public class Servicio {
         this.precio = precio;
     }
 
-    public String getTipoServico() {
-        return tipoServico;
+    public String getTipoServicio() {
+        return tipoServicio;
     }
 
-    public void setTipoServico(String tipoServico) {
-        this.tipoServico = tipoServico;
+    public void setTipoServicio(String tipoServicio) {
+        this.tipoServicio = tipoServicio;
     }
 }
 

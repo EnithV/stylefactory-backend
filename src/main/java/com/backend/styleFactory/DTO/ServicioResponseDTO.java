@@ -2,26 +2,26 @@ package com.backend.styleFactory.DTO;
 
 import com.backend.styleFactory.model.Servicio;
 
-public class ServiceResponseDTO {
+public class ServicioResponseDTO {
     private Long id;
     private String nombre;
     private String descripcion;
     private String urlImagen;
     private boolean estado = true;
     private Double precio;
-    private String tipoServico;
+    private String tipoServicio;
 
-    public ServiceResponseDTO() {
+    public ServicioResponseDTO() {
     }
 
-    public static ServiceResponseDTO desde(Servicio servicio){
-        ServiceResponseDTO dto = new ServiceResponseDTO();
-        dto.id = servicio.getIdServico();
+    public static ServicioResponseDTO desde(Servicio servicio){
+        ServicioResponseDTO dto = new ServicioResponseDTO();
+        dto.id = servicio.getIdServicio();
         dto.nombre = servicio.getNombre();
         dto.descripcion = servicio.getDescripcion();
         dto.urlImagen = servicio.getUrlImagen();
         dto.precio = servicio.getPrecio();
-        dto.tipoServico = servicio.getTipoServico();
+        dto.tipoServicio = servicio.getTipoServicio();
         dto.estado = servicio.isEstado();
         return dto;
     }
@@ -74,11 +74,11 @@ public class ServiceResponseDTO {
         this.precio = precio;
     }
 
-    public String getTipoServico() {
-        return tipoServico;
+    public String getTipoServicio() {
+        return tipoServicio;
     }
 
-    public void setTipoServico(String tipoServico) {
-        this.tipoServico = tipoServico;
+    public void setTipoServicio(String tipoServicio) {
+        this.tipoServicio = tipoServicio;
     }
 }
