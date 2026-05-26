@@ -5,7 +5,7 @@ import com.backend.styleFactory.DTO.EmpleadoResponseDTO;
 import com.backend.styleFactory.model.Empleado;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.EmpleadoRepository;
-import com.backend.styleFactory.repository.UsuarioRespository;
+import com.backend.styleFactory.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,14 +15,14 @@ import java.util.stream.Collectors;
 @Service
 public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
-    private final UsuarioRespository usuarioRepository;
+    private final UsuarioRepository usuarioRepository;
 
     @Autowired
-    public EmpleadoService(EmpleadoRepository empleadoRepository, UsuarioRespository usuarioRepository) {
+    public EmpleadoService(EmpleadoRepository empleadoRepository, UsuarioRepository usuarioRepository) {
         this.empleadoRepository = empleadoRepository;
         this.usuarioRepository = usuarioRepository;
-
     }
+
     public List<EmpleadoResponseDTO> findAll() {
         return empleadoRepository.findAll()
                 .stream()
@@ -30,30 +30,35 @@ public class EmpleadoService {
                 .collect(Collectors.toList());
     }
 
-    public EmpleadoResponseDTO findById(Long id){
-        Empleado empleado = empleadoRepository.findById(id).orElse(null);
-        if (empleado == null) return null;
+    public EmpleadoResponseDTO findById(Long id) {
+        Empleado empleado = empleadoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
         return EmpleadoResponseDTO.desde(empleado);
     }
 
-    public EmpleadoResponseDTO save(EmpleadoRequestDTO dto){
-        Usuario usuario = usuarioRepository.findById(dto.getUsuario_id()).orElse(null);
-        Empleado empleado = new Empleado(usuario, dto.getEspecialida(), dto.getEstado(), dto.getUrl());
+    public EmpleadoResponseDTO save(EmpleadoRequestDTO dto) {
+        Usuario usuario = usuarioRepository.findById(dto.getUsuario_id())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + dto.getUsuario_id()));
+        Empleado empleado = new Empleado(usuario, dto.getEspecialidad(), dto.getEstado(), dto.getUrl());
         return EmpleadoResponseDTO.desde(empleadoRepository.save(empleado));
     }
 
     public EmpleadoResponseDTO update(Long id, EmpleadoRequestDTO dto) {
-       Empleado existe = empleadoRepository.findById(id).orElse(null);
-        if (existe == null) return null;
-        Usuario usuario = usuarioRepository.findById(dto.getUsuario_id()).orElse(null);
+        Empleado existe = empleadoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
+        Usuario usuario = usuarioRepository.findById(dto.getUsuario_id())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + dto.getUsuario_id()));
         existe.setUsuario(usuario);
-        existe.setEspecialidad(dto.getEspecialida());
+        existe.setEspecialidad(dto.getEspecialidad());
         existe.setEstado(dto.getEstado());
         existe.setUrl(dto.getUrl());
         return EmpleadoResponseDTO.desde(empleadoRepository.save(existe));
     }
 
-    public void delete(Long id){
-        empleadoRepository.deleteById(id);
+    public void delete(Long id) {
+        Empleado empleado = empleadoRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + id));
+        empleado.setEstado(false);               // borrado lógico
+        empleadoRepository.save(empleado);
     }
 }
