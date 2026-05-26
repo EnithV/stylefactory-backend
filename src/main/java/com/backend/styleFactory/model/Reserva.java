@@ -9,6 +9,9 @@ import java.time.LocalTime;
  * Mapea la tabla {@code reservas} de la base de datos.
  * Una reserva asocia a un cliente (usuario), un empleado (estilista) y un servicio
  * en una fecha y hora determinadas, y posee un estado que indica su situación actual.
+ *
+ * @author (tu nombre)
+ * @version 1.1
  */
 @Entity
 @Table(name = "reservas")
@@ -36,7 +39,7 @@ public class Reserva {
 
     /** Cliente que realiza la reserva. */
     @ManyToOne
-    @JoinColumn(name = "id_usuarios", nullable = false)
+    @JoinColumn(name = "id_usuario", nullable = false)   // Nombre de columna corregido de 'id_usuarios' a 'id_usuario' para reflejar correctamente la cardinalidad de la relación.
     private Usuario usuario;
 
     /** Estilista asignado para ejecutar el servicio. */

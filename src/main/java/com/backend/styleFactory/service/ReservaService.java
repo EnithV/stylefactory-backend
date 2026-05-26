@@ -15,10 +15,6 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
-/**
- * Lógica de negocio para la entidad {@link Reserva}.
- * Gestiona las reservas de servicios realizadas por los clientes.
- */
 @Service
 public class ReservaService {
 
@@ -47,31 +43,36 @@ public class ReservaService {
     public ReservaResponseDTO findById(Long id) {
         return reservaRepository.findById(id)
                 .map(ReservaResponseDTO::desde)
-                .orElse(null);
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con id: " + id));
     }
 
     public ReservaResponseDTO save(ReservaRequestDTO dto) {
-        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId()).orElse(null);
-        Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId()).orElse(null);
-        Servicio servicio = servicioRepository.findById(dto.getServicioId()).orElse(null);
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + dto.getUsuarioId()));
+        Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId())
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + dto.getEmpleadoId()));
+        Servicio servicio = servicioRepository.findById(dto.getServicioId())
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con id: " + dto.getServicioId()));
 
         String estado = dto.getEstado();
         if (estado == null || estado.isBlank()) {
             estado = "PENDIENTE";
         }
 
-        Reserva reserva = new Reserva(dto.getFecha(), dto.getHora(), estado,
-                usuario, empleado, servicio);
+        Reserva reserva = new Reserva(dto.getFecha(), dto.getHora(), estado, usuario, empleado, servicio);
         return ReservaResponseDTO.desde(reservaRepository.save(reserva));
     }
 
     public ReservaResponseDTO update(Long id, ReservaRequestDTO dto) {
-        Reserva existente = reservaRepository.findById(id).orElse(null);
-        if (existente == null) return null;
+        Reserva existente = reservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con id: " + id));
 
-        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId()).orElse(null);
-        Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId()).orElse(null);
-        Servicio servicio = servicioRepository.findById(dto.getServicioId()).orElse(null);
+        Usuario usuario = usuarioRepository.findById(dto.getUsuarioId())
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + dto.getUsuarioId()));
+        Empleado empleado = empleadoRepository.findById(dto.getEmpleadoId())
+                .orElseThrow(() -> new RuntimeException("Empleado no encontrado con id: " + dto.getEmpleadoId()));
+        Servicio servicio = servicioRepository.findById(dto.getServicioId())
+                .orElseThrow(() -> new RuntimeException("Servicio no encontrado con id: " + dto.getServicioId()));
 
         existente.setFecha(dto.getFecha());
         existente.setHora(dto.getHora());
@@ -85,6 +86,9 @@ public class ReservaService {
     }
 
     public void delete(Long id) {
+        if (!reservaRepository.existsById(id)) {
+            throw new RuntimeException("Reserva no encontrada con id: " + id);
+        }
         reservaRepository.deleteById(id);
     }
 }
