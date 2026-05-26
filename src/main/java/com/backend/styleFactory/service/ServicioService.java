@@ -32,17 +32,17 @@ public class ServicioService {
     }
 
     public ServicioResponseDTO save(ServicioResponseDTO dto){
-        if (servicioRepository.existsByNombre(dto.getNombre())){
-            throw new RuntimeException("Ya existe un servicio con ese nombre");
-        }
-        Servicio servicio = new Servicio(
-                dto.getNombre(),
-                dto.getDescripcion(),
-                dto.getUrlImagen(),
-                dto.getPrecio(),
-                dto.getTipoServicio(),
-                true
-        );
+            if (servicioRepository.existsByNombre(dto.getNombre())){
+                throw new RuntimeException("Ya existe un servicio con ese nombre");
+            }
+            Servicio servicio = new Servicio(
+                    dto.getNombre(),
+                    dto.getDescripcion(),
+                    dto.getUrlImagen(),
+                    dto.getPrecio(),
+                    dto.getTipoServicio(),
+                    true
+            );
         return ServicioResponseDTO.desde(servicioRepository.save(servicio));
     }
 

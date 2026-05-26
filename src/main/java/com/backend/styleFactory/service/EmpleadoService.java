@@ -5,7 +5,6 @@ import com.backend.styleFactory.DTO.EmpleadoResponseDTO;
 import com.backend.styleFactory.model.Empleado;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.EmpleadoRepository;
-import com.backend.styleFactory.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,10 +14,10 @@ import java.util.stream.Collectors;
 @Service
 public class EmpleadoService {
     private final EmpleadoRepository empleadoRepository;
-    private final UsuarioRepository usuarioRepository;
+    private final UsuarioRespository usuarioRepository;
 
     @Autowired
-    public EmpleadoService(EmpleadoRepository empleadoRepository, UsuarioRepository usuarioRepository) {
+    public EmpleadoService(EmpleadoRepository empleadoRepository, UsuarioRespository usuarioRepository) {
         this.empleadoRepository = empleadoRepository;
         this.usuarioRepository = usuarioRepository;
 

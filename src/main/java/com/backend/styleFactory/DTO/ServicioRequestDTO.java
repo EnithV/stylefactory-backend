@@ -1,42 +1,68 @@
 package com.backend.styleFactory.DTO;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.*;
 
-/**
- * DTO de solicitud para crear o actualizar un servicio.
- */
 public class ServicioRequestDTO {
-
-    @NotBlank(message = "El nombre es obligatorio")
+    @NotNull(message = "El nombre del servicio es obligatorio")
     private String nombre;
-
-    @NotBlank(message = "La descripción es obligatoria")
+    @NotNull(message = "la descripcion del servicio es obligatoria")
     private String descripcion;
-
-    @NotBlank(message = "La URL de la imagen es obligatoria")
+    @NotNull(message = "La imagen del servicio es obligatorio")
     private String urlImagen;
-
-    @NotBlank(message = "El tipo de servicio es obligatorio")
-    private String tipo;
-
-    @Positive(message = "El precio debe ser mayor que cero")
+    private boolean estado = true;
+    @NotNull(message = "El precio del servicio es obligatorio")
     private Double precio;
+    @NotNull(message = "El tipo de servicio es obligatorio")
+    private String tipoServicio;
 
-    public ServicioRequestDTO() {}
+    public ServicioRequestDTO() {
+    }
 
-    public String getNombre() { return nombre; }
-    public void setNombre(String nombre) { this.nombre = nombre; }
+    public String getNombre() {
+        return nombre;
+    }
 
-    public String getDescripcion() { return descripcion; }
-    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
 
-    public String getUrlImagen() { return urlImagen; }
-    public void setUrlImagen(String urlImagen) { this.urlImagen = urlImagen; }
+    public String getDescripcion() {
+        return descripcion;
+    }
 
-    public String getTipo() { return tipo; }
-    public void setTipo(String tipo) { this.tipo = tipo; }
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
 
-    public Double getPrecio() { return precio; }
-    public void setPrecio(Double precio) { this.precio = precio; }
+    public String getUrlImagen() {
+        return urlImagen;
+    }
+
+    public void setUrlImagen(String urlImagen) {
+        this.urlImagen = urlImagen;
+    }
+
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
+
+    public Double getPrecio() {
+        return precio;
+    }
+
+    public void setPrecio(Double precio) {
+        this.precio = precio;
+    }
+
+    public String getTipoServicio() {
+        return tipoServicio;
+    }
+
+    public void setTipoServicio(String tipoServico) {
+        this.tipoServicio = tipoServico;
+    }
 }
