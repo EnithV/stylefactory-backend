@@ -2,15 +2,34 @@ package com.backend.styleFactory.DTO;
 
 import com.backend.styleFactory.model.RolUsuario;
 
-public class UsuarioRequestDTO {
+public class UsuarioResponseDTO {
 
+    private Long id;
     private String nombre;
     private String correo;
     private String telefono;
-    private String contrasena;
     private RolUsuario rol;
+    private boolean estado;
 
-    public UsuarioRequestDTO() {}
+    public UsuarioResponseDTO() {
+    }
+
+    public UsuarioResponseDTO(Long id, String nombre, String correo, String telefono, RolUsuario rol, boolean estado) {
+        this.id = id;
+        this.nombre = nombre;
+        this.correo = correo;
+        this.telefono = telefono;
+        this.rol = rol;
+        this.estado = estado;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getNombre() {
         return nombre;
@@ -23,6 +42,7 @@ public class UsuarioRequestDTO {
     public String getCorreo() {
         return correo;
     }
+
     public void setCorreo(String correo) {
         this.correo = correo;
     }
@@ -35,14 +55,6 @@ public class UsuarioRequestDTO {
         this.telefono = telefono;
     }
 
-    public String getContrasena() {
-        return contrasena;
-    }
-
-    public void setContrasena(String contrasena) {
-        this.contrasena = contrasena;
-    }
-
     public RolUsuario getRol() {
         return rol;
     }
@@ -51,4 +63,11 @@ public class UsuarioRequestDTO {
         this.rol = rol;
     }
 
+    public boolean isEstado() {
+        return estado;
+    }
+
+    public void setEstado(boolean estado) {
+        this.estado = estado;
+    }
 }
