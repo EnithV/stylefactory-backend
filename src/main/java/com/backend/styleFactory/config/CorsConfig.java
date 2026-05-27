@@ -6,10 +6,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.CorsFilter;
 
-import java.util.Arrays;
-
 /**
- * Configuración global de CORS utilizando CorsFilter.
+ * Configuración global de CORS.
+ * Permite solicitudes desde el frontend de desarrollo y desde GitHub Pages.
  */
 @Configuration
 public class CorsConfig {
@@ -18,21 +17,23 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Orígenes permitidos explícitamente (local + GitHub Pages)
-        config.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://127.0.0.1:5173",
-                "https://enithv.github.io"
-        ));
+        // Orígenes permitidos (se restringe a los dominios que se usan realmente)
+        config.addAllowedOriginPattern("https://enithv.github.io");
+        config.addAllowedOriginPattern("http://localhost:5173");
+        config.addAllowedOriginPattern("http://127.0.0.1:5173");
 
-        // Métodos HTTP que acepta el frontend
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        // Métodos HTTP que puede utilizar el frontend
+        config.addAllowedMethod("GET");
+        config.addAllowedMethod("POST");
+        config.addAllowedMethod("PUT");
+        config.addAllowedMethod("DELETE");
+        config.addAllowedMethod("OPTIONS");
 
-        // Encabezados permitidos (incluye Authorization para el token JWT)
+        // Encabezados permitidos (incluye Authorization para JWT)
         config.addAllowedHeader("*");
 
-        // Permitir envío de credenciales (cookies, cabeceras de autenticación)
-        config.setAllowCredentials(true);
+        // Con JWT no se necesitan credenciales (cookies), por lo que se mantiene false
+        config.setAllowCredentials(false);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
