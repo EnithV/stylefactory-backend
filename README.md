@@ -264,7 +264,7 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 - `spring-boot-starter-security`
 - `spring-boot-starter-validation`
 - `jjwt-api`, `jjwt-impl`, `jjwt-jackson` (0.12.6)
-- `springdoc-openapi-starter-webmvc-ui` (2.5.0)
+- `springdoc-openapi-starter-webmvc-ui` (3.0.0 — requerido con Spring Boot 4)
 - `postgresql`
 - `spring-boot-starter-test` (incluye JUnit y Mockito)
 

@@ -3,6 +3,7 @@ package com.backend.styleFactory.config;
 import com.backend.styleFactory.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,53 +12,62 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 /**
  * Configuración de seguridad de la aplicación.
- * Define las reglas de acceso a las rutas y la integración del filtro JWT.
+ * Swagger/OpenAPI va en una cadena aparte, sin JWT, para evitar 403 en /v3/api-docs.
  */
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private static final String[] SWAGGER_PATHS = {
-            "/v3/api-docs",
-            "/v3/api-docs/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/webjars/**"
-    };
+  /** Rutas de documentación (springdoc + Swagger UI). */
+  private static final String[] SWAGGER_PATHS = {
+      "/swagger-ui/**",
+      "/swagger-ui.html",
+      "/v3/api-docs",
+      "/v3/api-docs/**",
+      "/webjars/**"
+  };
 
-    private final JwtFilter jwtFilter;
+  private final JwtFilter jwtFilter;
 
-    public SecurityConfig(JwtFilter jwtFilter) {
-        this.jwtFilter = jwtFilter;
-    }
+  public SecurityConfig(JwtFilter jwtFilter) {
+    this.jwtFilter = jwtFilter;
+  }
 
-    /**
-     * Cadena de filtros de seguridad que establece las políticas de sesión,
-     * protección CSRF, autorización de rutas y agrega el filtro JWT.
-     *
-     * @param http Objeto HttpSecurity proporcionado por Spring
-     * @return SecurityFilterChain configurado
-     * @throws Exception si ocurre un error en la configuración
-     */
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-                .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(auth -> auth
-                        // Endpoints públicos
-                        .requestMatchers("/", "/health").permitAll()
-                        .requestMatchers("/auth/**").permitAll()
-                        .requestMatchers(SWAGGER_PATHS).permitAll()
-                        // Endpoints restringidos por rol
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/empleados/**").hasAnyRole("ADMIN", "EMPLEADO")
-                        // Cualquier otra petición requiere autenticación
-                        .anyRequest().authenticated()
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+  /**
+   * Solo documentación: acceso público, sin filtro JWT.
+   */
+  @Bean
+  @Order(1)
+  public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
+    http.securityMatcher(SWAGGER_PATHS)
+        .csrf(csrf -> csrf.disable())
+        .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+    return http.build();
+  }
 
-        return http.build();
-    }
+  /**
+   * API REST: auth, roles y JWT.
+   */
+  @Bean
+  @Order(2)
+  public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
+    http.csrf(csrf -> csrf.disable())
+        .sessionManagement(
+            session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+        .authorizeHttpRequests(
+            auth ->
+                auth.requestMatchers("/", "/health")
+                    .permitAll()
+                    .requestMatchers("/auth/**")
+                    .permitAll()
+                    .requestMatchers("/admin/**")
+                    .hasRole("ADMIN")
+                    .requestMatchers("/empleados/**")
+                    .hasAnyRole("ADMIN", "EMPLEADO")
+                    .anyRequest()
+                    .authenticated())
+        .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+    return http.build();
+  }
 }
