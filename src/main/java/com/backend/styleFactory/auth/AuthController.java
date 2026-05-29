@@ -61,6 +61,7 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "mensaje", "Usuario registrado exitosamente",
+                "id", usuario.getId(),
                 "correo", usuario.getCorreo(),
                 "rol", usuario.getRol()
         ));
@@ -84,6 +85,7 @@ public class AuthController {
 
         return ResponseEntity.ok(Map.of(
                 "token", token,
+                "id", usuario.getId(),
                 "correo", usuario.getCorreo(),
                 "rol", usuario.getRol(),
                 "nombre", usuario.getNombre()
