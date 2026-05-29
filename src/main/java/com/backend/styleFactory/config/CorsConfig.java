@@ -17,10 +17,12 @@ public class CorsConfig {
     public CorsFilter corsFilter() {
         CorsConfiguration config = new CorsConfiguration();
 
-        // Orígenes permitidos (se restringe a los dominios que se usan realmente)
+        // Orígenes del frontend (GitHub Pages, Live Server, Vite, etc.)
         config.addAllowedOriginPattern("https://enithv.github.io");
-        config.addAllowedOriginPattern("http://localhost:5173");
-        config.addAllowedOriginPattern("http://127.0.0.1:5173");
+        config.addAllowedOriginPattern("http://localhost:*");
+        config.addAllowedOriginPattern("http://127.0.0.1:*");
+        config.addAllowedOriginPattern("https://localhost:*");
+        config.addAllowedOriginPattern("https://127.0.0.1:*");
 
         // Métodos HTTP que puede utilizar el frontend
         config.addAllowedMethod("GET");
