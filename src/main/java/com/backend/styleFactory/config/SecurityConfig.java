@@ -47,6 +47,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         // Endpoints públicos
+                        .requestMatchers("/", "/health").permitAll()
                         .requestMatchers("/auth/**").permitAll()
                         .requestMatchers(SWAGGER_PATHS).permitAll()
                         // Endpoints restringidos por rol
