@@ -1,5 +1,6 @@
 package com.backend.styleFactory.controller;
 
+import com.backend.styleFactory.config.CorsConfig;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -17,6 +18,7 @@ public class HealthController {
                 "estado", "ok",
                 "servicio", "Style Factory API",
                 "mensaje", "API en línea. Use los endpoints REST o la documentación Swagger.",
+                "frontend", CorsConfig.FRONTEND_PUBLIC_URL,
                 "documentacion", "/swagger-ui/index.html",
                 "auth", Map.of(
                         "registro", "POST /auth/register",

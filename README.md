@@ -163,9 +163,21 @@ sequenceDiagram
     end
 ```
 
+## 🌐 Despliegue (producción)
+
+| Componente | URL |
+|------------|-----|
+| **Frontend** (GitHub Pages, repo `EnithV/stylefactory`) | https://enithv.github.io/stylefactory/ |
+| **Backend** (Render) | https://stylefactoryapi.onrender.com |
+| **Swagger** | https://stylefactoryapi.onrender.com/swagger-ui/index.html |
+
+El frontend llama al API con `API_BASE` en `stylefactory-frontend/assets/js/config.js`.  
+CORS en `CorsConfig.java` permite el origen `https://enithv.github.io` (GitHub Pages).
+
 ## 📡 API REST
 
-Base URL: `http://localhost:8080`
+Base URL local: `http://localhost:8081` (o el valor de `server.port` en `application.properties`)  
+Base URL producción: `https://stylefactoryapi.onrender.com`
 
 Leyenda de acceso:
 
