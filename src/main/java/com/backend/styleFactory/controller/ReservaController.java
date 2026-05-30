@@ -12,6 +12,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Controlador REST para la gestión de reservas.
@@ -86,6 +87,16 @@ public class ReservaController {
         ReservaResponseDTO actualizado = reservaService.update(id, dto);
         if (actualizado == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(actualizado);
+    }
+
+    /**
+     * Cambia únicamente el estado de una reserva (panel admin).
+     */
+    @PatchMapping("/{id}/estado")
+    public ResponseEntity<ReservaResponseDTO> actualizarEstado(@PathVariable Long id,
+                                                               @RequestBody Map<String, String> body) {
+        String estado = body != null ? body.get("estado") : null;
+        return ResponseEntity.ok(reservaService.updateEstado(id, estado));
     }
 
     /**

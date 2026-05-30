@@ -114,6 +114,26 @@ public class ReservaService {
         reservaRepository.deleteById(id);
     }
 
+    /**
+     * Actualiza solo el estado de una reserva (gestión admin sin revalidar horario).
+     */
+    public ReservaResponseDTO updateEstado(Long id, String nuevoEstado) {
+        if (nuevoEstado == null || nuevoEstado.isBlank()) {
+            throw new RuntimeException("El estado es obligatorio");
+        }
+
+        String estadoNormalizado = nuevoEstado.trim().toUpperCase();
+        if (!List.of("PENDIENTE", "CONFIRMADA", "CANCELADA", "COMPLETADA").contains(estadoNormalizado)) {
+            throw new RuntimeException("Estado no válido: " + nuevoEstado);
+        }
+
+        Reserva reserva = reservaRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada con id: " + id));
+
+        reserva.setEstado(estadoNormalizado);
+        return ReservaResponseDTO.desde(reservaRepository.save(reserva));
+    }
+
     private void validarEntidadesActivas(Empleado empleado, Servicio servicio) {
         if (Boolean.FALSE.equals(empleado.getEstado())) {
             throw new RuntimeException("El estilista seleccionado no está disponible");
