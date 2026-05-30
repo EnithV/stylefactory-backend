@@ -96,4 +96,44 @@ class ReservaServiceTest {
                 () -> reservaService.save(requestDTO));
         assertTrue(exception.getMessage().contains("Usuario no encontrado"));
     }
+
+    /**
+     * Prueba que se rechace una reserva si el servicio no termina antes de las 8 p.m.
+     */
+    @Test
+    void save_DeberiaLanzarExcepcion_CuandoServicioExcedeCierreAtencion() {
+        servicio.setDuracionMinutos(150);
+        requestDTO.setHora(LocalTime.of(18, 0));
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(empleadoRepository.findById(1L)).thenReturn(Optional.of(empleado));
+        when(servicioRepository.findById(1L)).thenReturn(Optional.of(servicio));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> reservaService.save(requestDTO));
+        assertTrue(exception.getMessage().contains("8:00 p.m."));
+    }
+
+    /**
+     * Prueba que se acepte una reserva cuando la duración cabe antes del cierre.
+     */
+    @Test
+    void save_DeberiaCrearReserva_CuandoDuracionCabeEnHorarioAtencion() {
+        servicio.setDuracionMinutos(120);
+        requestDTO.setHora(LocalTime.of(18, 0));
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(empleadoRepository.findById(1L)).thenReturn(Optional.of(empleado));
+        when(servicioRepository.findById(1L)).thenReturn(Optional.of(servicio));
+        when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
+            Reserva r = invocation.getArgument(0);
+            r.setId(1L);
+            return r;
+        });
+
+        ReservaResponseDTO response = reservaService.save(requestDTO);
+
+        assertNotNull(response);
+        verify(reservaRepository, times(1)).save(any(Reserva.class));
+    }
 }
