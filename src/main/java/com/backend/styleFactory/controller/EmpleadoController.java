@@ -4,6 +4,7 @@ import com.backend.styleFactory.DTO.EmpleadoCatalogoDTO;
 import com.backend.styleFactory.DTO.EmpleadoRequestDTO;
 import com.backend.styleFactory.DTO.EmpleadoResponseDTO;
 import com.backend.styleFactory.service.EmpleadoService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,6 +30,7 @@ public class EmpleadoController {
      * Lista estilistas activos para el catálogo público de reservas.
      */
     @GetMapping("/catalogo")
+    @SecurityRequirements
     public ResponseEntity<List<EmpleadoCatalogoDTO>> catalogoPublico() {
         return ResponseEntity.ok(empleadoService.findCatalogoActivos());
     }

@@ -4,6 +4,7 @@ import com.backend.styleFactory.model.RolUsuario;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.UsuarioRepository;
 import com.backend.styleFactory.security.JwtUtil;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +20,7 @@ import java.util.Map;
  */
 @RestController
 @RequestMapping("/auth")
+@SecurityRequirements
 public class AuthController {
 
     private final UsuarioRepository usuarioRepository;

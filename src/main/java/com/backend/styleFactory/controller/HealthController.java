@@ -1,6 +1,7 @@
 package com.backend.styleFactory.controller;
 
 import com.backend.styleFactory.config.CorsConfig;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * Endpoint público de comprobación. El backend es una API REST, no una página web.
  */
 @RestController
+@SecurityRequirements
 public class HealthController {
 
     @GetMapping("/")

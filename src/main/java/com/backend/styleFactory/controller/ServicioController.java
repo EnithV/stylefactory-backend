@@ -3,6 +3,7 @@ package com.backend.styleFactory.controller;
 import com.backend.styleFactory.DTO.ServicioRequestDTO;
 import com.backend.styleFactory.DTO.ServicioResponseDTO;
 import com.backend.styleFactory.service.ServicioService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,11 +22,13 @@ public class ServicioController {
     }
 
     @GetMapping
+    @SecurityRequirements
     public ResponseEntity<List<ServicioResponseDTO>> listarServicios() {
         return ResponseEntity.ok(servicioService.findAll());
     }
 
     @GetMapping("/{id}")
+    @SecurityRequirements
     public ResponseEntity<ServicioResponseDTO> obtenerPorId(@PathVariable Long id) {
         ServicioResponseDTO servicio = servicioService.findById(id);
         if (servicio == null) return ResponseEntity.notFound().build();
