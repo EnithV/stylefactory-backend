@@ -51,7 +51,7 @@ class ReservaServiceTest {
         empleado = new Empleado(usuario, "Corte", true, "url_foto");
         empleado.setId(1L);
 
-        servicio = new Servicio("Corte Clásico", "Corte con tijera", "url_imagen", 20.0, "Corte", true);
+        servicio = new Servicio("Corte Clásico", "Corte con tijera", "url_imagen", 20.0, "Corte", 45, true);
         servicio.setIdServicio(1L);
 
         requestDTO = new ReservaRequestDTO();

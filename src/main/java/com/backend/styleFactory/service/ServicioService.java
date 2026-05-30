@@ -46,6 +46,7 @@ public class ServicioService {
                 dto.getUrlImagen(),
                 dto.getPrecio(),
                 dto.getTipoServicio(),
+                dto.getDuracionMinutos(),
                 dto.isEstado()
         );
         return ServicioResponseDTO.desde(servicioRepository.save(servicio));
@@ -64,6 +65,7 @@ public class ServicioService {
         existente.setUrlImagen(dto.getUrlImagen());
         existente.setPrecio(dto.getPrecio());
         existente.setTipoServicio(dto.getTipoServicio());
+        existente.setDuracionMinutos(dto.getDuracionMinutos());
         existente.setEstado(dto.isEstado());
 
         return ServicioResponseDTO.desde(servicioRepository.save(existente));

@@ -15,6 +15,11 @@ public class ServicioRequestDTO {
     @NotNull(message = "El tipo de servicio es obligatorio")
     private String tipoServicio;
 
+    @NotNull(message = "La duración estimada es obligatoria")
+    @Min(value = 15, message = "La duración mínima es 15 minutos")
+    @Max(value = 480, message = "La duración máxima es 480 minutos")
+    private Integer duracionMinutos;
+
     public ServicioRequestDTO() {
     }
 
@@ -64,5 +69,13 @@ public class ServicioRequestDTO {
 
     public void setTipoServicio(String tipoServico) {
         this.tipoServicio = tipoServico;
+    }
+
+    public Integer getDuracionMinutos() {
+        return duracionMinutos;
+    }
+
+    public void setDuracionMinutos(Integer duracionMinutos) {
+        this.duracionMinutos = duracionMinutos;
     }
 }

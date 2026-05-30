@@ -38,18 +38,27 @@ public class Servicio {
     @Column(name = "tipo", nullable = false, length = 200)
     private String tipoServicio;
 
+    /** Duración estimada del servicio en minutos (referencia para reservas). */
+    @NotNull(message = "La duración es obligatoria")
+    @Min(value = 15, message = "La duración mínima es 15 minutos")
+    @Max(value = 480, message = "La duración máxima es 480 minutos")
+    @Column(name = "duracion_minutos", nullable = false)
+    private Integer duracionMinutos = 60;
+
 //    @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL)
 //    private List<Reserva> reservas = new ArrayList<>();
 
     public Servicio() {
     }
 
-    public Servicio( String nombre, String descripcion, String urlImagen, Double precio, String tipoServicio, boolean estado) {
+    public Servicio(String nombre, String descripcion, String urlImagen, Double precio,
+                    String tipoServicio, Integer duracionMinutos, boolean estado) {
         this.nombre = nombre;
         this.descripcion = descripcion;
         this.urlImagen = urlImagen;
         this.precio = precio;
         this.tipoServicio = tipoServicio;
+        this.duracionMinutos = duracionMinutos;
         this.estado = estado;
     }
 
@@ -107,6 +116,14 @@ public class Servicio {
 
     public void setTipoServicio(String tipoServicio) {
         this.tipoServicio = tipoServicio;
+    }
+
+    public Integer getDuracionMinutos() {
+        return duracionMinutos;
+    }
+
+    public void setDuracionMinutos(Integer duracionMinutos) {
+        this.duracionMinutos = duracionMinutos;
     }
 }
 

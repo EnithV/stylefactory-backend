@@ -10,6 +10,7 @@ public class ServicioResponseDTO {
     private boolean estado = true;
     private Double precio;
     private String tipoServicio;
+    private Integer duracionMinutos;
 
     public ServicioResponseDTO() {
     }
@@ -22,6 +23,7 @@ public class ServicioResponseDTO {
         dto.urlImagen = servicio.getUrlImagen();
         dto.precio = servicio.getPrecio();
         dto.tipoServicio = servicio.getTipoServicio();
+        dto.duracionMinutos = servicio.getDuracionMinutos();
         dto.estado = servicio.isEstado();
         return dto;
     }
@@ -80,5 +82,13 @@ public class ServicioResponseDTO {
 
     public void setTipoServicio(String tipoServicio) {
         this.tipoServicio = tipoServicio;
+    }
+
+    public Integer getDuracionMinutos() {
+        return duracionMinutos;
+    }
+
+    public void setDuracionMinutos(Integer duracionMinutos) {
+        this.duracionMinutos = duracionMinutos;
     }
 }
