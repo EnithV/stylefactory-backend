@@ -1,5 +1,6 @@
 package com.backend.styleFactory.service;
 
+import com.backend.styleFactory.DTO.EmpleadoCatalogoDTO;
 import com.backend.styleFactory.DTO.EmpleadoRequestDTO;
 import com.backend.styleFactory.DTO.EmpleadoResponseDTO;
 import com.backend.styleFactory.model.Empleado;
@@ -27,6 +28,14 @@ public class EmpleadoService {
         return empleadoRepository.findAll()
                 .stream()
                 .map(EmpleadoResponseDTO::desde)
+                .collect(Collectors.toList());
+    }
+
+    public List<EmpleadoCatalogoDTO> findCatalogoActivos() {
+        return empleadoRepository.findAll()
+                .stream()
+                .filter(e -> Boolean.TRUE.equals(e.getEstado()))
+                .map(EmpleadoCatalogoDTO::desde)
                 .collect(Collectors.toList());
     }
 

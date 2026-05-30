@@ -1,5 +1,6 @@
 package com.backend.styleFactory.controller;
 
+import com.backend.styleFactory.DTO.EmpleadoCatalogoDTO;
 import com.backend.styleFactory.DTO.EmpleadoRequestDTO;
 import com.backend.styleFactory.DTO.EmpleadoResponseDTO;
 import com.backend.styleFactory.service.EmpleadoService;
@@ -22,6 +23,14 @@ public class EmpleadoController {
 
     public EmpleadoController(EmpleadoService empleadoService) {
         this.empleadoService = empleadoService;
+    }
+
+    /**
+     * Lista estilistas activos para el catálogo público de reservas.
+     */
+    @GetMapping("/catalogo")
+    public ResponseEntity<List<EmpleadoCatalogoDTO>> catalogoPublico() {
+        return ResponseEntity.ok(empleadoService.findCatalogoActivos());
     }
 
     /**
