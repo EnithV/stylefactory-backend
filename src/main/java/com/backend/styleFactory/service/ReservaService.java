@@ -49,6 +49,13 @@ public class ReservaService {
                 .collect(Collectors.toList());
     }
 
+    public List<ReservaResponseDTO> findByUsuarioId(Long usuarioId) {
+        return reservaRepository.findByUsuario_IdOrderByFechaDescHoraDesc(usuarioId)
+                .stream()
+                .map(ReservaResponseDTO::desde)
+                .collect(Collectors.toList());
+    }
+
     public ReservaResponseDTO findById(Long id) {
         return reservaRepository.findById(id)
                 .map(ReservaResponseDTO::desde)

@@ -2,10 +2,13 @@ package com.backend.styleFactory.controller;
 
 import com.backend.styleFactory.DTO.ReservaRequestDTO;
 import com.backend.styleFactory.DTO.ReservaResponseDTO;
+import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.service.ReservaService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +35,18 @@ public class ReservaController {
     @GetMapping
     public ResponseEntity<List<ReservaResponseDTO>> obtenerTodos() {
         return ResponseEntity.ok(reservaService.findAll());
+    }
+
+    /**
+     * Reservas del usuario autenticado (área personal del cliente).
+     */
+    @GetMapping("/mis-reservas")
+    public ResponseEntity<List<ReservaResponseDTO>> misReservas() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(reservaService.findByUsuarioId(usuario.getId()));
     }
 
     /**
