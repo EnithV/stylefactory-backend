@@ -4,6 +4,8 @@ import com.backend.styleFactory.security.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -41,6 +43,7 @@ public class SecurityConfig {
   public SecurityFilterChain swaggerSecurityFilterChain(HttpSecurity http) throws Exception {
     http.securityMatcher(SWAGGER_PATHS)
         .csrf(csrf -> csrf.disable())
+        .cors(Customizer.withDefaults())
         .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
     return http.build();
   }
@@ -51,12 +54,15 @@ public class SecurityConfig {
   @Bean
   @Order(2)
   public SecurityFilterChain apiSecurityFilterChain(HttpSecurity http) throws Exception {
-    http.csrf(csrf -> csrf.disable())
+    http.cors(Customizer.withDefaults())
+        .csrf(csrf -> csrf.disable())
         .sessionManagement(
             session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             auth ->
-                auth.requestMatchers("/", "/health")
+                auth.requestMatchers(HttpMethod.OPTIONS, "/**")
+                    .permitAll()
+                    .requestMatchers("/", "/health")
                     .permitAll()
                     .requestMatchers("/auth/**")
                     .permitAll()
