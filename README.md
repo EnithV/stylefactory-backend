@@ -1,303 +1,581 @@
-# 💈 Style Factory – Backend
+# Style Factory — Backend
 
-API REST para la gestión de una sala de belleza. Permite administrar usuarios, empleados, servicios, horarios y reservas, con autenticación basada en JWT y control de acceso por roles.
+API REST para la gestión integral de **Style Factory**, salón de belleza y bienestar. Expone endpoints para autenticación, usuarios, empleados (estilistas), servicios, horarios y reservas, con seguridad basada en **JWT**, control de acceso por roles y persistencia en **PostgreSQL** (Supabase en producción).
 
-## 🚀 Tecnologías
+---
 
-- **Java 17**
-- **Spring Boot 4.0.6**
-- **Spring Security** + **JWT** (io.jsonwebtoken)
-- **Spring Data JPA** (Hibernate)
-- **PostgreSQL**
-- **Swagger / OpenAPI** (springdoc-openapi)
-- **JUnit 5** + **Mockito** para pruebas unitarias
-- **Maven**
+## Enlaces del proyecto
 
-## 📁 Estructura del proyecto
+| Recurso | URL |
+|---------|-----|
+| **API en producción (Render)** | https://stylefactoryapi.onrender.com |
+| **Swagger UI** | https://stylefactoryapi.onrender.com/swagger-ui/index.html |
+| **Health check** | https://stylefactoryapi.onrender.com/health |
+| **Repositorio backend** | https://github.com/EnithV/stylefactory-backend |
+| **Frontend (GitHub Pages)** | https://enithv.github.io/stylefactory/ |
+| **Repositorio frontend** | https://github.com/EnithV/stylefactory |
+
+---
+
+## Stack tecnológico
+
+| Tecnología | Versión / detalle |
+|------------|-------------------|
+| Java | 17 |
+| Spring Boot | 4.0.6 |
+| Spring Web MVC | REST JSON |
+| Spring Data JPA | Hibernate |
+| Spring Security | JWT stateless |
+| PostgreSQL | Supabase (producción) |
+| JWT | jjwt 0.12.6 |
+| OpenAPI / Swagger | springdoc-openapi 3.0.0 |
+| Validación | Jakarta Bean Validation |
+| Pruebas | JUnit 5 + Mockito |
+| Build | Maven |
+
+---
+
+## Arquitectura
+
+El proyecto sigue una arquitectura en capas clásica de Spring Boot:
+
+```
+Cliente (GitHub Pages / navegador)
+        │
+        ▼ HTTP + JSON (+ Authorization: Bearer …)
+┌───────────────────────────────────────┐
+│  Controllers  (/auth, /usuarios, …)   │
+├───────────────────────────────────────┤
+│  Services     (reglas de negocio)     │
+├───────────────────────────────────────┤
+│  Repositories (Spring Data JPA)       │
+├───────────────────────────────────────┤
+│  PostgreSQL (Supabase)                │
+└───────────────────────────────────────┘
+        ▲
+        │ JwtFilter valida token antes del controller
+        │ SecurityConfig define rutas públicas y roles
+```
+
+### Estructura de paquetes
 
 ```
 src/main/java/com/backend/styleFactory/
-├── auth/                    # Autenticación (registro y login)
-│   ├── AuthController.java
+├── StyleFactoryApplication.java      # Punto de entrada
+├── auth/
+│   ├── AuthController.java             # POST /auth/register, /auth/login
 │   ├── LoginRequestDTO.java
 │   └── RegisterRequestDTO.java
-├── config/                  # Configuraciones de seguridad, CORS y Swagger
-│   ├── ApplicationConfig.java
-│   ├── CorsConfig.java
-│   ├── SecurityConfig.java
-│   └── SwaggerConfig.java
-├── controller/              # Endpoints REST
+├── config/
+│   ├── ApplicationConfig.java          # AuthenticationManager, PasswordEncoder
+│   ├── CorsConfig.java                 # Orígenes GitHub Pages + localhost
+│   ├── SecurityConfig.java             # Cadenas de filtros JWT + Swagger
+│   └── SwaggerConfig.java              # Esquema bearerAuth (OpenAPI)
+├── controller/
 │   ├── EmpleadoController.java
+│   ├── HealthController.java           # GET /, /health
 │   ├── HorarioController.java
 │   ├── ReservaController.java
 │   ├── ServicioController.java
 │   └── UsuarioController.java
-├── DTO/                     # Objetos de transferencia de datos
-│   ├── EmpleadoRequestDTO.java
-│   ├── EmpleadoResponseDTO.java
-│   ├── HorarioRequestDTO.java
-│   ├── HorarioResponseDTO.java
-│   ├── ReservaRequestDTO.java
-│   ├── ReservaResponseDTO.java
-│   ├── ServicioRequestDTO.java
-│   ├── ServicioResponseDTO.java
-│   ├── UsuarioRequestDTO.java
-│   └── UsuarioResponseDTO.java
-├── exception/               # Manejo global de excepciones
+├── DTO/                                # Request/Response por entidad
+├── exception/
 │   └── GlobalExceptionHandler.java
-├── model/                   # Entidades JPA
+├── model/
 │   ├── Empleado.java
 │   ├── Horario.java
 │   ├── Reserva.java
-│   ├── RolUsuario.java      # Enum: ADMIN, EMPLEADO, CLIENTE
+│   ├── RolUsuario.java                 # ADMIN | EMPLEADO | CLIENTE
 │   ├── Servicio.java
-│   └── Usuario.java
-├── repository/              # Acceso a datos (Spring Data JPA)
-│   ├── EmpleadoRepository.java
-│   ├── HorarioRepository.java
-│   ├── ReservaRepository.java
-│   ├── ServicioRepository.java
-│   └── UsuarioRepository.java
-├── security/                # Lógica de JWT
-│   ├── JwtFilter.java
-│   └── JwtUtil.java
-└── service/                 # Lógica de negocio
-    ├── EmpleadoService.java
-    ├── HorarioService.java
-    ├── ReservaService.java
-    ├── ServicioService.java
-    └── UsuarioService.java
+│   └── Usuario.java                    # Implementa UserDetails
+├── repository/                         # JpaRepository por entidad
+├── security/
+│   ├── JwtFilter.java                  # Extrae Bearer token del header
+│   └── JwtUtil.java                    # Generación y validación JWT
+└── service/                            # Lógica de negocio
 
 src/main/resources/
-└── application.properties   # Configuración local (NO se sube al repositorio)
+└── application.properties              # NO se versiona (ver .gitignore)
 
-src/test/java/com/backend/styleFactory/service/
-└── ReservaServiceTest.java  # Prueba unitaria del servicio de reservas
+src/test/java/.../service/
+└── ReservaServiceTest.java
 ```
 
-## ⚙️ Configuración inicial
+---
 
-1. **Clonar el repositorio** y abrir el proyecto en IntelliJ (o el IDE de tu preferencia).
-2. **Crear una base de datos** en PostgreSQL llamada `styleFactory` (o el nombre que prefieras).
-3. **Configurar `application.properties`** con tus datos locales (este archivo no se incluye en el repositorio). Ejemplo:
+## Configuración local
+
+### Requisitos
+
+- JDK 17+
+- Maven 3.8+
+- PostgreSQL local **o** proyecto Supabase con credenciales de conexión
+
+### Variables y propiedades
+
+El archivo `src/main/resources/application.properties` está en **`.gitignore`**. Cada desarrollador debe crearlo localmente con este contenido de referencia:
 
 ```properties
-server.port=8080
-spring.datasource.url=jdbc:postgresql://localhost:5432/styleFactory
-spring.datasource.username=postgres
+server.port=8081
+spring.application.name=styleFactory
+
+# Base de datos
+spring.datasource.url=jdbc:postgresql://HOST:5432/postgres
+spring.datasource.username=TU_USUARIO
 spring.datasource.password=TU_CONTRASEÑA
-spring.jpa.hibernate.ddl-auto=create
+spring.datasource.driver-class-name=org.postgresql.Driver
+
+# JPA / Hibernate
+spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
+spring.jpa.properties.hibernate.format_sql=true
+spring.jpa.open-in-view=false
+
+# JWT (valores de desarrollo; en Render se sobreescriben por entorno)
+jwt.secret=TU_CLAVE_SECRETA_LARGA
+jwt.expiration=86400000
+
+# Swagger
+springdoc.api-docs.path=/v3/api-docs
+springdoc.swagger-ui.path=/swagger-ui
+springdoc.swagger-ui.enabled=true
+springdoc.api-docs.enabled=true
 ```
 
-4. **Ejecutar la aplicación** desde la clase `StyleFactoryApplication`.
-5. **Swagger UI** disponible en: [http://localhost:8080/swagger-ui/index.html](http://localhost:8080/swagger-ui/index.html) (también redirige desde `/swagger-ui.html`)
+| Propiedad | Descripción |
+|-----------|-------------|
+| `server.port` | Puerto local por defecto **8081**. Render inyecta `PORT` (8080). |
+| `spring.jpa.hibernate.ddl-auto` | **`update`** en producción para no borrar datos. En local puedes usar `create` solo si quieres recrear tablas. |
+| `jwt.secret` | Clave HMAC para firmar tokens. **Nunca** commitear valores reales. |
+| `jwt.expiration` | Duración del access token en ms. **86400000 = 24 horas**. |
 
-## 🔐 Seguridad (JWT + roles)
+### Ejecutar la aplicación
 
-### Roles disponibles
-
-| Rol        | Permisos principales                                              |
-|------------|-------------------------------------------------------------------|
-| `ADMIN`    | Acceso total a todos los endpoints y panel de control             |
-| `EMPLEADO` | Acceso al módulo de empleados y horarios                          |
-| `CLIENTE`  | Registro, login y realización de reservas                         |
-
-### Flujo de autenticación
-
-**Registro** — `POST /auth/register`
-
-- Recibe los datos del usuario, encripta la contraseña con BCrypt y asigna el rol.
-- Si no se envía rol, se asigna `CLIENTE` por defecto.
-
-**Login** — `POST /auth/login`
-
-- Valida credenciales contra la base de datos.
-- Si son correctas, devuelve un token JWT con validez de **24 horas**.
-
-**Peticiones protegidas**
-
-- El cliente debe enviar el token en el encabezado: `Authorization: Bearer <token>`
-- El filtro `JwtFilter` extrae y valida el token, carga el usuario y establece los roles en el contexto de seguridad.
-- Las reglas de autorización en `SecurityConfig` restringen el acceso según los roles.
-
-### Endpoints públicos
-
-- `POST /auth/register`
-- `POST /auth/login`
-- Swagger UI (`/swagger-ui/**`, `/swagger-ui.html`, `/v3/api-docs`, `/v3/api-docs/**`, `/webjars/**`)
-
-Todos los demás endpoints requieren autenticación. Algunos exigen un rol específico:
-
-- `/admin/**` → `ADMIN` (reservado en `SecurityConfig`; aún sin controladores implementados)
-- `/empleados/**` → `ADMIN` o `EMPLEADO`
-
-### Diagrama del flujo JWT
-
-```mermaid
-sequenceDiagram
-    participant C as Cliente
-    participant API as API REST
-    participant Auth as AuthController
-    participant DB as PostgreSQL
-    participant Filter as JwtFilter
-    participant Sec as SecurityConfig
-
-    Note over C,Sec: Registro / Login (público)
-    C->>API: POST /auth/register o /auth/login
-    API->>Auth: Procesar credenciales
-    Auth->>DB: Guardar o validar usuario
-    Auth-->>C: JWT (24 h) en login exitoso
-
-    Note over C,Sec: Petición protegida
-    C->>API: Request + Authorization: Bearer token
-    API->>Filter: Interceptar petición
-    Filter->>Filter: Validar token (JwtUtil)
-    Filter->>DB: Cargar UserDetails por username
-    Filter->>Sec: Establecer roles en SecurityContext
-    Sec->>Sec: Evaluar reglas (/empleados, /admin, etc.)
-    alt Token válido y rol permitido
-        API-->>C: 200 + respuesta
-    else Token inválido o sin permiso
-        API-->>C: 401 / 403
-    end
+```bash
+git clone https://github.com/EnithV/stylefactory-backend.git
+cd stylefactory-backend
+mvn spring-boot:run
 ```
 
-## 🌐 Despliegue (producción)
+Alternativa: ejecutar la clase `StyleFactoryApplication` desde el IDE.
 
-| Componente | URL |
-|------------|-----|
-| **Frontend** (GitHub Pages, repo `EnithV/stylefactory`) | https://enithv.github.io/stylefactory/ |
-| **Backend** (Render) | https://stylefactoryapi.onrender.com |
-| **Swagger** | https://stylefactoryapi.onrender.com/swagger-ui/index.html |
+- API local: `http://localhost:8081`
+- Swagger local: `http://localhost:8081/swagger-ui/index.html`
 
-El frontend llama al API con `API_BASE` en `stylefactory-frontend/assets/js/config.js`.  
-CORS en `CorsConfig.java` permite el origen `https://enithv.github.io` (GitHub Pages).
+### Datos iniciales (Supabase)
 
-## 📡 API REST
+Scripts SQL de referencia en el repositorio del **frontend** (`dataBase/`):
 
-Base URL local: `http://localhost:8081` (o el valor de `server.port` en `application.properties`)  
-Base URL producción: `https://stylefactoryapi.onrender.com`
+| Archivo | Propósito |
+|---------|-----------|
+| `query_base_de_datos.sql` | Esquema inicial de tablas |
+| `seed_catalogo_stylefactory.sql` | 6 estilistas + 10 servicios alineados con el frontend |
+| `migracion_duracion_servicios.sql` | Columna `duracion_minutos` en servicios |
 
-Leyenda de acceso:
+Ejecutar en **Supabase → SQL Editor** según el estado de la base de datos.
 
-| Acceso        | Descripción                                              |
-|---------------|----------------------------------------------------------|
-| **Público**   | No requiere token                                        |
-| **JWT**       | Cualquier usuario autenticado con token válido           |
-| **ADMIN**     | Rol `ADMIN`                                              |
-| **ADMIN/EMP** | Rol `ADMIN` o `EMPLEADO` (rutas bajo `/empleados/**`)    |
+---
 
-### Auth (`AuthController`)
+## Despliegue en Render
 
-| Método | Ruta              | Acceso   | Descripción                    |
-|--------|-------------------|----------|--------------------------------|
-| POST   | `/auth/register`  | Público  | Registro de usuario            |
-| POST   | `/auth/login`     | Público  | Login; devuelve JWT (24 h)     |
+### Servicio web
 
-### Usuarios (`UsuarioController` — `/usuarios`)
+1. Conectar el repositorio `EnithV/stylefactory-backend`.
+2. Build: `mvn clean package -DskipTests` (o el comando configurado en Render).
+3. Start: `java -jar target/styleFactory-0.0.1-SNAPSHOT.jar`.
 
-| Método | Ruta            | Acceso | Descripción              |
-|--------|-----------------|--------|--------------------------|
-| POST   | `/usuarios`     | JWT    | Crear usuario            |
-| GET    | `/usuarios`     | JWT    | Listar usuarios          |
-| GET    | `/usuarios/{id}`| JWT    | Obtener por ID           |
-| PUT    | `/usuarios/{id}`| JWT    | Actualizar usuario       |
-| DELETE | `/usuarios/{id}`| JWT    | Desactivar (borrado lógico) |
+### Variables de entorno obligatorias
 
-### Empleados (`EmpleadoController` — `/empleados`)
+| Variable | Descripción |
+|----------|-------------|
+| `SPRING_DATASOURCE_URL` | JDBC Supabase (pooler recomendado), ej. `jdbc:postgresql://…pooler.supabase.com:6543/postgres` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de conexión Supabase |
+| `SPRING_DATASOURCE_PASSWORD` | Contraseña de la base de datos |
+| `JWT_SECRET` | Clave secreta para firmar JWT (hex o string largo) |
+| `JWT_EXPIRATION` | `86400000` (24 h) u otro valor en milisegundos |
+| `PORT` | Lo asigna Render automáticamente |
 
-| Método | Ruta               | Acceso    | Descripción              |
-|--------|--------------------|-----------|--------------------------|
-| GET    | `/empleados`       | ADMIN/EMP | Listar empleados         |
-| GET    | `/empleados/{id}`  | ADMIN/EMP | Obtener por ID           |
-| POST   | `/empleados`       | ADMIN/EMP | Crear empleado           |
-| PUT    | `/empleados/{id}`  | ADMIN/EMP | Actualizar empleado      |
-| DELETE | `/empleados/{id}`  | ADMIN/EMP | Desactivar (borrado lógico) |
+> **Importante:** Si cambias `JWT_SECRET` en producción, todos los tokens emitidos con la clave anterior dejan de ser válidos. Los usuarios deben volver a iniciar sesión.
 
-### Servicios (`ServicioController` — `/servicios`)
+### Cold start (plan gratuito)
 
-| Método | Ruta               | Acceso | Descripción        |
-|--------|--------------------|--------|--------------------|
-| GET    | `/servicios`       | JWT    | Listar servicios   |
-| GET    | `/servicios/{id}`  | JWT    | Obtener por ID     |
-| POST   | `/servicios`       | JWT    | Crear servicio     |
-| PUT    | `/servicios/{id}`  | JWT    | Actualizar servicio|
-| DELETE | `/servicios/{id}`  | JWT    | Eliminar servicio  |
+Tras inactividad, la primera petición puede tardar **30–90 segundos** mientras el contenedor arranca. El frontend muestra mensajes de conexión acordes en `config.js`.
 
-### Horarios (`HorarioController` — `/horarios`)
+---
 
-| Método | Ruta        | Acceso | Descripción           |
-|--------|-------------|--------|-----------------------|
-| GET    | `/horarios` | JWT    | Listar horarios       |
-| POST   | `/horarios` | JWT    | Crear o guardar horario |
+## Seguridad
 
-### Reservas (`ReservaController` — `/reservas`)
+### Modelo JWT stateless
 
-| Método | Ruta              | Acceso | Descripción        |
-|--------|-------------------|--------|--------------------|
-| GET    | `/reservas`       | JWT    | Listar reservas    |
-| GET    | `/reservas/{id}`  | JWT    | Obtener por ID     |
-| POST   | `/reservas`       | JWT    | Crear reserva      |
-| PUT    | `/reservas/{id}`  | JWT    | Actualizar reserva |
-| DELETE | `/reservas/{id}`  | JWT    | Eliminar reserva   |
+- El token **no se guarda** en PostgreSQL.
+- Se genera en `POST /auth/login` y expira según `jwt.expiration`.
+- El cliente lo envía en cada petición protegida: `Authorization: Bearer <token>`.
+- `JwtFilter` valida firma y expiración; carga el `Usuario` desde la BD por correo (subject del token).
 
-### Documentación (Swagger)
+### Roles (`RolUsuario`)
 
-| Método | Ruta                    | Acceso  | Descripción              |
-|--------|-------------------------|---------|--------------------------|
-| GET    | `/swagger-ui/**`        | Público | Interfaz Swagger UI      |
-| GET    | `/v3/api-docs/**`       | Público | Especificación OpenAPI   |
+| Rol | Uso principal |
+|-----|----------------|
+| `ADMIN` | Panel de administración del frontend; acceso completo a la API autenticada |
+| `EMPLEADO` | Estilistas; acceso a rutas `/empleados/**` (excepto catálogo público) |
+| `CLIENTE` | Registro, reservas, área «Mis reservas» |
 
-### Ejemplo de petición autenticada
+Spring Security antepone `ROLE_` al evaluar autoridades (`hasRole("ADMIN")` ↔ `ROLE_ADMIN`).
+
+### Rutas públicas (sin JWT)
+
+| Método | Ruta | Notas |
+|--------|------|-------|
+| GET | `/`, `/health` | Estado del servicio |
+| POST | `/auth/register`, `/auth/login` | Autenticación |
+| GET | `/servicios`, `/servicios/{id}` | Catálogo público para el sitio |
+| GET | `/empleados/catalogo` | Estilistas activos para reservas |
+| GET | `/swagger-ui/**`, `/v3/api-docs/**` | Documentación OpenAPI |
+| OPTIONS | `/**` | Preflight CORS |
+
+Todo lo demás requiere JWT válido. Rutas `/empleados/**` (CRUD) exigen `ADMIN` o `EMPLEADO`. La ruta `/admin/**` está reservada para `ADMIN` (sin controladores propios aún).
+
+### CORS
+
+`CorsConfig.java` permite:
+
+- `https://enithv.github.io` (GitHub Pages — el header `Origin` no incluye `/stylefactory`)
+- `http://localhost:*` y `http://127.0.0.1:*`
+
+Métodos permitidos: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`.
+
+### Crear usuario administrador
+
+**Opción 1 — Registro público (Swagger o curl):**
 
 ```http
-GET /reservas HTTP/1.1
-Host: localhost:8080
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+POST /auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Administrador",
+  "correo": "admin@ejemplo.com",
+  "telefono": "3000000000",
+  "contrasena": "TuPassword123!",
+  "rol": "ADMIN"
+}
 ```
 
-## 📦 Dependencias principales
+**Opción 2 — Swagger:** `POST /auth/login` → copiar `token` → botón **Authorize** → pegar solo el token (sin `Bearer`).
 
-- `spring-boot-starter-webmvc`
-- `spring-boot-starter-data-jpa`
-- `spring-boot-starter-security`
-- `spring-boot-starter-validation`
-- `jjwt-api`, `jjwt-impl`, `jjwt-jackson` (0.12.6)
-- `springdoc-openapi-starter-webmvc-ui` (3.0.0 — requerido con Spring Boot 4)
-- `postgresql`
-- `spring-boot-starter-test` (incluye JUnit y Mockito)
+---
 
-## 🧪 Pruebas unitarias
+## API REST — referencia completa
 
-El proyecto incluye pruebas para el servicio de reservas (`ReservaServiceTest`) que verifican:
+**Base URL producción:** `https://stylefactoryapi.onrender.com`  
+**Base URL local:** `http://localhost:8081`
 
-- Creación exitosa de una reserva cuando todas las entidades relacionadas existen.
-- Lanzamiento de una excepción cuando el usuario asociado no se encuentra.
+### Auth
 
-Se ejecutan con **JUnit 5** y **Mockito**. Para correrlas: clic derecho sobre la clase → **Run 'ReservaServiceTest'**.
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/auth/register` | Público | Alta de usuario. Rol por defecto: `CLIENTE`. |
+| POST | `/auth/login` | Público | Devuelve JWT + datos del usuario. |
 
-También puedes ejecutarlas con Maven:
+**Login — cuerpo:**
+
+```json
+{
+  "correo": "cliente@ejemplo.com",
+  "contrasena": "MiPassword123!"
+}
+```
+
+**Login — respuesta exitosa:**
+
+```json
+{
+  "token": "eyJhbGciOiJIUzI1NiJ9…",
+  "id": 1,
+  "correo": "cliente@ejemplo.com",
+  "rol": "CLIENTE",
+  "nombre": "María López"
+}
+```
+
+**Registro — cuerpo:**
+
+```json
+{
+  "nombre": "María López",
+  "correo": "cliente@ejemplo.com",
+  "telefono": "3001234567",
+  "contrasena": "MiPassword123!",
+  "rol": "CLIENTE"
+}
+```
+
+### Usuarios (`/usuarios`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| POST | `/usuarios` | JWT | Crear usuario |
+| GET | `/usuarios` | JWT | Listar |
+| GET | `/usuarios/{id}` | JWT | Obtener por ID |
+| PUT | `/usuarios/{id}` | JWT | Actualizar |
+| DELETE | `/usuarios/{id}` | JWT | Desactivar (`estado = false`) |
+
+### Empleados (`/empleados`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/empleados/catalogo` | **Público** | Lista reducida para el flujo de reservas |
+| GET | `/empleados` | ADMIN/EMP | Listar todos |
+| GET | `/empleados/{id}` | ADMIN/EMP | Detalle |
+| POST | `/empleados` | ADMIN/EMP | Crear (asociado a `Usuario`) |
+| PUT | `/empleados/{id}` | ADMIN/EMP | Actualizar |
+| DELETE | `/empleados/{id}` | ADMIN/EMP | Desactivar (borrado lógico) |
+
+### Servicios (`/servicios`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/servicios` | **Público** | Catálogo activo |
+| GET | `/servicios/{id}` | **Público** | Detalle |
+| POST | `/servicios` | JWT | Crear (panel admin) |
+| PUT | `/servicios/{id}` | JWT | Actualizar |
+| DELETE | `/servicios/{id}` | JWT | Eliminar |
+
+Campos relevantes del servicio: `nombre`, `descripcion`, `urlImagen`, `precio`, `tipoServicio`, `duracionMinutos` (15–480), `estado`.
+
+### Horarios (`/horarios`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/horarios` | JWT | Listar |
+| POST | `/horarios` | JWT | Crear o guardar |
+
+### Reservas (`/reservas`)
+
+| Método | Ruta | Auth | Descripción |
+|--------|------|------|-------------|
+| GET | `/reservas` | JWT | Listar todas (admin) |
+| GET | `/reservas/mis-reservas` | JWT | Reservas del usuario autenticado |
+| GET | `/reservas/{id}` | JWT | Detalle |
+| POST | `/reservas` | JWT | Crear reserva |
+| PUT | `/reservas/{id}` | JWT | Actualizar (revalida horario) |
+| PATCH | `/reservas/{id}/estado` | JWT | Cambiar solo estado (panel admin) |
+| DELETE | `/reservas/{id}` | JWT | Eliminar |
+
+**Crear reserva — cuerpo:**
+
+```json
+{
+  "fecha": "2026-06-15",
+  "hora": "10:00:00",
+  "estado": "CONFIRMADA",
+  "usuarioId": 2,
+  "empleadoId": 1,
+  "servicioId": 3
+}
+```
+
+**PATCH estado — cuerpo:**
+
+```json
+{
+  "estado": "COMPLETADA"
+}
+```
+
+Estados válidos: `PENDIENTE`, `CONFIRMADA`, `CANCELADA`, `COMPLETADA`.
+
+**Respuesta de reserva (ejemplo):**
+
+```json
+{
+  "id": 10,
+  "fecha": "2026-06-15",
+  "hora": "10:00:00",
+  "estado": "CONFIRMADA",
+  "nombreUsuario": "María López",
+  "nombreEmpleado": "Ana García",
+  "nombreServicio": "Tinte y Coloración"
+}
+```
+
+### Reglas de negocio — horarios de reserva
+
+Implementadas en `ReservaService.validarReglasHorario()` (zona `America/Bogota`):
+
+| Regla | Valor |
+|-------|-------|
+| Apertura del salón | 9:00 a.m. |
+| Última hora de **inicio** de cita | 6:00 p.m. |
+| Cierre de atención | 8:00 p.m. |
+| Duración | `duracionMinutos` del servicio |
+| Fechas pasadas | Rechazadas |
+| Hoy, hora ya pasada | Rechazada |
+| Fin del servicio después de 8 p.m. | Rechazada |
+
+`updateEstado()` **no** revalida horario: permite al admin gestionar el ciclo de vida sin mover fecha/hora.
+
+### Health
+
+| Método | Ruta | Respuesta |
+|--------|------|-----------|
+| GET | `/` | JSON con enlaces a Swagger y frontend |
+| GET | `/health` | `{"estado":"ok"}` |
+
+---
+
+## Modelo de datos (resumen)
+
+| Tabla | Entidad | Notas |
+|-------|---------|-------|
+| `usuarios` | `Usuario` | PK `id_usuario`, correo único, contraseña BCrypt |
+| `empleados` | `Empleado` | FK a usuario; borrado lógico (`estado`) |
+| `servicios` | `Servicio` | Incluye `duracion_minutos` y `tipo` |
+| `horarios` | `Horario` | Disponibilidad por empleado/fecha |
+| `reservas` | `Reserva` | FK usuario, empleado, servicio; `estado` como String |
+
+Relaciones principales:
+
+```
+Usuario 1 —— 0..1 Empleado
+Usuario 1 —— * Reserva
+Empleado 1 —— * Reserva
+Servicio 1 —— * Reserva
+```
+
+---
+
+## Manejo de errores
+
+`GlobalExceptionHandler` devuelve JSON uniforme:
+
+```json
+{
+  "timestamp": "2026-05-30T14:22:00",
+  "status": 400,
+  "error": "Bad Request",
+  "message": "La última hora de inicio permitida es las 6:00 p.m."
+}
+```
+
+- Errores de negocio (`RuntimeException` en services): **400**
+- Validación de DTOs (`@Valid`): **400** con primer campo inválido
+- Sin autenticación / token inválido: **401**
+- Sin permiso de rol: **403**
+
+---
+
+## Swagger / OpenAPI
+
+1. Abrir https://stylefactoryapi.onrender.com/swagger-ui/index.html
+2. Ejecutar `POST /auth/login` con credenciales válidas.
+3. Copiar el campo `token` de la respuesta.
+4. Clic en **Authorize** → pegar el token (sin prefijo `Bearer`).
+5. Probar endpoints protegidos (`GET /usuarios`, `GET /reservas`, etc.).
+
+`SwaggerConfig` registra el esquema `bearerAuth` (HTTP Bearer, formato JWT). Las rutas públicas de auth y catálogo usan `@SecurityRequirements` vacío donde aplica.
+
+---
+
+## Pruebas unitarias
+
+Ubicación: `src/test/java/com/backend/styleFactory/service/ReservaServiceTest.java`
+
+| Test | Verifica |
+|------|----------|
+| `save_DeberiaCrearReserva_CuandoEntidadesExisten` | Creación exitosa |
+| `save_DeberiaLanzarExcepcion_CuandoUsuarioNoExiste` | Usuario inexistente |
+| `save_DeberiaLanzarExcepcion_CuandoServicioExcedeCierreAtencion` | Regla 8 p.m. |
+| `save_DeberiaCrearReserva_CuandoDuracionCabeEnHorarioAtencion` | Inicio 6 p.m. + 120 min OK |
 
 ```bash
 mvn test
 ```
 
-## ♻️ Borrado lógico
+---
 
-Las entidades `Usuario` y `Empleado` no se eliminan físicamente; se **desactivan** (`estado = false`). Esto preserva la integridad referencial con las reservas históricas.
+## Integración con el frontend
 
-## 📌 Notas importantes
+El frontend (`EnithV/stylefactory`) consume esta API mediante:
 
-- `application.properties` **nunca** se incluye en los commits. Cada desarrollador mantiene su propia configuración local.
-- La base de datos se recrea en cada inicio (`ddl-auto=create`); esto es solo para entorno de desarrollo.
-- La documentación Swagger se genera automáticamente desde `SwaggerConfig.java` (sin necesidad de anotaciones en los controladores).
+- `assets/js/config.js` — `API_BASE = "https://stylefactoryapi.onrender.com"`
+- `assets/js/apiClient.js` — helpers CRUD servicios/reservas con módulos ES6
+- Formularios de login/registro — `POST /auth/*`
+- Catálogo — `GET /servicios` (público)
+- Confirmación de reserva — `POST /reservas` con `estado: "CONFIRMADA"`
+- Panel admin — CRUD servicios, listado/eliminación de reservas, `PATCH …/estado`
+- Mis reservas — `GET /reservas/mis-reservas`
 
-## ✅ Estado del proyecto
+Diagrama de flujo de autenticación:
 
-- CRUD completo para Usuario, Empleado, Servicio, Reserva y Horario.
-- Autenticación y autorización con JWT y roles.
-- Manejo global de excepciones.
-- Configuración centralizada de Swagger.
-- Pruebas unitarias funcionales.
-- Código integrado en la rama **Dev**, listo para conectar con el frontend.
+```mermaid
+sequenceDiagram
+    participant C as Cliente HTTP
+    participant F as JwtFilter
+    participant A as AuthController
+    participant S as Service
+    participant DB as PostgreSQL
+
+    Note over C,DB: Login (público)
+    C->>A: POST /auth/login
+    A->>DB: Validar BCrypt
+    A-->>C: token JWT (24 h)
+
+    Note over C,DB: Petición protegida
+    C->>F: Authorization: Bearer eyJ…
+    F->>F: Verificar firma + exp
+    F->>DB: Cargar Usuario por correo
+    F->>S: Controller → Service
+    S->>DB: Persistir / consultar
+    S-->>C: JSON respuesta
+```
+
+---
+
+## Borrado lógico
+
+- **Usuario** y **Empleado:** `DELETE` pone `estado = false`. No se eliminan filas para preservar historial de reservas.
+- **Reserva** y **Servicio:** eliminación física vía repository.
+
+---
+
+## Estado del proyecto
+
+| Funcionalidad | Estado |
+|---------------|--------|
+| CRUD Usuario, Empleado, Servicio, Horario, Reserva | Completo |
+| JWT + roles + CORS GitHub Pages | Completo |
+| Catálogo y empleados públicos (GET) | Completo |
+| Reglas de horario con duración | Completo |
+| PATCH estado reservas (admin) | Completo |
+| GET mis-reservas (cliente) | Completo |
+| Swagger con Authorize JWT | Completo |
+| Despliegue Render + Supabase | Operativo |
+| Pruebas unitarias ReservaService | 4 tests |
+
+### Mejoras futuras (no implementadas)
+
+- Integración de horarios reales en el frontend de reservas (hoy usa disponibilidad mock en UI).
+- Refresh tokens y revocación de sesiones.
+- Envío de correos (confirmación de reserva/registro).
+- Políticas RLS en Supabase como capa adicional.
+- Endpoints bajo `/admin/**` dedicados.
+- Ampliar cobertura de tests.
+
+---
+
+## Solución de problemas
+
+| Síntoma | Causa probable | Acción |
+|---------|----------------|--------|
+| 403 en Swagger con token | Token expirado o no Authorize | Volver a login y Authorize |
+| 403 desde GitHub Pages en PATCH | CORS sin PATCH (versiones antiguas) | Desplegar commit con `PATCH` en `CorsConfig` |
+| 401 en panel admin | Token ausente en `localStorage` | Re-login en el sitio |
+| NetworkError / timeout | Cold start Render | Esperar ~1 min y reintentar |
+| Error JDBC al arrancar | Variables `SPRING_DATASOURCE_*` incorrectas | Revisar Render Environment |
+| Tokens invalidados tras deploy | Cambió `JWT_SECRET` | Login de nuevo |
+
+---
+
+*Style Factory — Cortes que inspiran.*  
+Proyecto **Generation Colombia**. Frontend: [EnithV/stylefactory](https://github.com/EnithV/stylefactory).
