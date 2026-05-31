@@ -4,6 +4,7 @@ import com.backend.styleFactory.model.Usuario;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -19,18 +20,19 @@ import java.util.Map;
 @Component
 public class JwtUtil {
 
-    // Clave secreta utilizada para firmar los tokens.
-    // En producción se debe externalizar en variables de entorno o properties.
-    private static final String SECRET = "claveSecretaSuperSeguraParaStyleFactory2026!";
-    private static final long EXPIRATION_MS = 86400000; // 24 horas
+    @Value("${jwt.secret}")
+    private String secret;
+
+    @Value("${jwt.expiration}")
+    private long expirationMs;
 
     /**
-     * Obtiene la clave de firma a partir de la constante SECRET.
+     * Obtiene la clave de firma a partir de jwt.secret (properties o env).
      *
      * @return SecretKey para HMAC-SHA256
      */
     private SecretKey getSigningKey() {
-        return Keys.hmacShaKeyFor(SECRET.getBytes());
+        return Keys.hmacShaKeyFor(secret.getBytes());
     }
 
     /**
@@ -49,7 +51,7 @@ public class JwtUtil {
                 .claims(claims)
                 .subject(usuario.getCorreo())
                 .issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + EXPIRATION_MS))
+                .expiration(new Date(System.currentTimeMillis() + expirationMs))
                 .signWith(getSigningKey())
                 .compact();
     }
