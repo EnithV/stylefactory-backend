@@ -68,6 +68,8 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/empleados/catalogo")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/horarios")
+                    .permitAll()
                     .requestMatchers(HttpMethod.GET, "/servicios", "/servicios/**")
                     .permitAll()
                     .requestMatchers("/admin/**")
