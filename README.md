@@ -1,6 +1,6 @@
 # Style Factory — Backend
 
-API REST para la gestión integral de **Style Factory**, salón de belleza y bienestar. Expone endpoints para autenticación, usuarios, empleados (estilistas), servicios, horarios y reservas, con seguridad basada en **JWT**, control de acceso por roles y persistencia en **PostgreSQL** (Supabase en producción).
+API REST en **Java 17 + Spring Boot** para la gestión integral de **Style Factory**, salón de belleza y bienestar (proyecto final **Full-Stack Java**, Generation Colombia). Expone endpoints para autenticación, usuarios, empleados (estilistas), servicios, horarios y reservas, con seguridad basada en **JWT**, control de acceso por roles y persistencia en **PostgreSQL** (Supabase en producción).
 
 ---
 
