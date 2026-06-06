@@ -170,9 +170,10 @@ Scripts SQL de referencia en el repositorio del **frontend** (`dataBase/`):
 |---------|-----------|
 | `query_base_de_datos.sql` | Esquema inicial de tablas |
 | `seed_catalogo_stylefactory.sql` | 6 estilistas + 10 servicios alineados con el frontend |
+| `migracion_imagenes_locales.sql` | URLs Cloudinary → GitHub Pages en empleados y servicios |
 | `migracion_duracion_servicios.sql` | Columna `duracion_minutos` en servicios |
 
-Ejecutar en **Supabase → SQL Editor** según el estado de la base de datos.
+Ejecutar en **Supabase → SQL Editor** del proyecto vinculado a Render (`SPRING_DATASOURCE_*`).
 
 ---
 
@@ -230,6 +231,8 @@ Spring Security antepone `ROLE_` al evaluar autoridades (`hasRole("ADMIN")` ↔ 
 | POST | `/auth/register`, `/auth/login` | Autenticación |
 | GET | `/servicios`, `/servicios/{id}` | Catálogo público para el sitio |
 | GET | `/empleados/catalogo` | Estilistas activos para reservas |
+| GET | `/horarios` | Disponibilidad (flujo de reservas en frontend) |
+| GET | `/reservas/ocupadas` | Franjas ya reservadas por estilista y fecha |
 | GET | `/swagger-ui/**`, `/v3/api-docs/**` | Documentación OpenAPI |
 | OPTIONS | `/**` | Preflight CORS |
 
@@ -246,22 +249,11 @@ Métodos permitidos: `GET`, `POST`, `PUT`, `PATCH`, `DELETE`, `OPTIONS`.
 
 ### Crear usuario administrador
 
-**Opción 1 — Registro público (Swagger o curl):**
+El registro público (`POST /auth/register`) asigna siempre rol `CLIENTE`; el campo `rol` del cuerpo se ignora.
 
-```http
-POST /auth/register
-Content-Type: application/json
+Para crear un administrador: insertar en Supabase con rol `ADMIN`, o usar `POST /usuarios` con JWT de un admin existente.
 
-{
-  "nombre": "Administrador",
-  "correo": "admin@ejemplo.com",
-  "telefono": "3000000000",
-  "contrasena": "TuPassword123!",
-  "rol": "ADMIN"
-}
-```
-
-**Opción 2 — Swagger:** `POST /auth/login` → copiar `token` → botón **Authorize** → pegar solo el token (sin `Bearer`).
+**Swagger:** `POST /auth/login` → copiar `token` → botón **Authorize** → pegar solo el token (sin `Bearer`).
 
 ---
 
@@ -317,7 +309,7 @@ Content-Type: application/json
 | POST | `/usuarios` | JWT | Crear usuario |
 | GET | `/usuarios` | JWT | Listar |
 | GET | `/usuarios/{id}` | JWT | Obtener por ID |
-| PUT | `/usuarios/{id}` | JWT | Actualizar |
+| PUT | `/usuarios/{id}` | JWT | Actualizar. Si **no** se envía `contrasena`, se conserva la actual |
 | DELETE | `/usuarios/{id}` | JWT | Desactivar (`estado = false`) |
 
 ### Empleados (`/empleados`)
@@ -347,8 +339,9 @@ Campos relevantes del servicio: `nombre`, `descripcion`, `urlImagen`, `precio`, 
 
 | Método | Ruta | Auth | Descripción |
 |--------|------|------|-------------|
-| GET | `/horarios` | JWT | Listar |
-| POST | `/horarios` | JWT | Crear o guardar |
+| GET | `/horarios` | **Público** | Listar (usado por el flujo de reservas) |
+| GET | `/reservas/ocupadas` | **Público** | Franjas ocupadas por empleado y fecha (`?empleadoId=&fecha=`) |
+| POST | `/horarios` | **ADMIN** | Crear o guardar (panel admin empleados) |
 
 ### Reservas (`/reservas`)
 
@@ -498,13 +491,16 @@ mvn test
 
 El frontend (`EnithV/stylefactory`) consume esta API mediante:
 
-- `assets/js/config.js` — `API_BASE = "https://stylefactoryapi.onrender.com"`
-- `assets/js/apiClient.js` — helpers CRUD servicios/reservas con módulos ES6
-- Formularios de login/registro — `POST /auth/*`
+- `assets/js/config.js` — `API_BASE`, rutas GitHub Pages, normalización de imágenes
+- `assets/js/apiClient.js` — CRUD servicios/reservas (módulos ES6)
+- `assets/js/sfAlert.js` — feedback en admin y formularios
+- Autenticación — `POST /auth/login`, `POST /auth/register`
+- Perfil cliente — `GET/PUT /usuarios/{id}`, `GET /reservas/mis-reservas`
 - Catálogo — `GET /servicios` (público)
-- Confirmación de reserva — `POST /reservas` con `estado: "CONFIRMADA"`
-- Panel admin — CRUD servicios, listado/eliminación de reservas, `PATCH …/estado`
-- Mis reservas — `GET /reservas/mis-reservas`
+- Reservas — `GET /empleados/catalogo`, `GET /horarios`, `POST /reservas`
+- Panel admin — CRUD servicios, reservas (`PATCH …/estado`), empleados y horarios
+
+Las imágenes del catálogo se sirven desde GitHub Pages (`urlImagen` en BD); no hay subida a Cloudinary en el flujo actual.
 
 Diagrama de flujo de autenticación:
 
@@ -545,20 +541,23 @@ sequenceDiagram
 |---------------|--------|
 | CRUD Usuario, Empleado, Servicio, Horario, Reserva | Completo |
 | JWT + roles + CORS GitHub Pages | Completo |
-| Catálogo y empleados públicos (GET) | Completo |
+| Catálogo, empleados y horarios públicos (GET) | Completo |
 | Reglas de horario con duración | Completo |
-| PATCH estado reservas (admin) | Completo |
-| GET mis-reservas (cliente) | Completo |
+| PATCH estado reservas (admin y cancelación cliente) | Completo |
+| Anti doble reserva + slots ocupados públicos | Completo |
+| POST reserva con usuarioId del JWT | Completo |
+| Registro público solo CLIENTE | Completo |
+| Endpoints admin restringidos por rol | Completo |
+| GET mis-reservas + PUT perfil sin reenviar contraseña | Completo |
 | Swagger con Authorize JWT | Completo |
 | Despliegue Render + Supabase | Operativo |
 | Pruebas unitarias ReservaService | 4 tests |
 
 ### Mejoras futuras (no implementadas)
 
-- Integración de horarios reales en el frontend de reservas (hoy usa disponibilidad mock en UI).
+- Endpoint `GET /admin/metricas` con agregaciones en servidor.
 - Refresh tokens y revocación de sesiones.
 - Envío de correos (confirmación de reserva/registro).
-- Políticas RLS en Supabase como capa adicional.
 - Endpoints bajo `/admin/**` dedicados.
 - Ampliar cobertura de tests.
 

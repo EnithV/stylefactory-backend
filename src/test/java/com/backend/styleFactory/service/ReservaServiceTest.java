@@ -13,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collections;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -71,6 +72,8 @@ class ReservaServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
         when(empleadoRepository.findById(1L)).thenReturn(Optional.of(empleado));
         when(servicioRepository.findById(1L)).thenReturn(Optional.of(servicio));
+        when(reservaRepository.findByEmpleado_IdAndFecha(1L, requestDTO.getFecha()))
+                .thenReturn(Collections.emptyList());
         when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
             Reserva r = invocation.getArgument(0);
             r.setId(1L);
@@ -125,6 +128,8 @@ class ReservaServiceTest {
         when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
         when(empleadoRepository.findById(1L)).thenReturn(Optional.of(empleado));
         when(servicioRepository.findById(1L)).thenReturn(Optional.of(servicio));
+        when(reservaRepository.findByEmpleado_IdAndFecha(1L, requestDTO.getFecha()))
+                .thenReturn(Collections.emptyList());
         when(reservaRepository.save(any(Reserva.class))).thenAnswer(invocation -> {
             Reserva r = invocation.getArgument(0);
             r.setId(1L);
@@ -135,5 +140,26 @@ class ReservaServiceTest {
 
         assertNotNull(response);
         verify(reservaRepository, times(1)).save(any(Reserva.class));
+    }
+
+    @Test
+    void save_DeberiaLanzarExcepcion_CuandoHaySolapamientoConOtraReserva() {
+        Reserva existente = new Reserva(
+                requestDTO.getFecha(),
+                LocalTime.of(10, 0),
+                "CONFIRMADA",
+                usuario,
+                empleado,
+                servicio);
+
+        when(usuarioRepository.findById(1L)).thenReturn(Optional.of(usuario));
+        when(empleadoRepository.findById(1L)).thenReturn(Optional.of(empleado));
+        when(servicioRepository.findById(1L)).thenReturn(Optional.of(servicio));
+        when(reservaRepository.findByEmpleado_IdAndFecha(1L, requestDTO.getFecha()))
+                .thenReturn(Collections.singletonList(existente));
+
+        RuntimeException exception = assertThrows(RuntimeException.class,
+                () -> reservaService.save(requestDTO));
+        assertTrue(exception.getMessage().contains("ya tiene una reserva"));
     }
 }

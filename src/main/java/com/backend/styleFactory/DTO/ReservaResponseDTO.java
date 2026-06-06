@@ -15,6 +15,9 @@ public class ReservaResponseDTO {
     private LocalDate fecha;
     private LocalTime hora;
     private String estado;
+    private Long usuarioId;
+    private Long servicioId;
+    private Double precioServicio;
     private String nombreUsuario;
     private String nombreEmpleado;
     private String nombreServicio;
@@ -28,6 +31,7 @@ public class ReservaResponseDTO {
         dto.hora = reserva.getHora();
         dto.estado = reserva.getEstado();
         if (reserva.getUsuario() != null) {
+            dto.usuarioId = reserva.getUsuario().getId();
             dto.nombreUsuario = reserva.getUsuario().getNombre();
         }
         if (reserva.getEmpleado() != null) {
@@ -35,6 +39,8 @@ public class ReservaResponseDTO {
                     reserva.getEmpleado().getUsuario().getNombre() : "Sin nombre";
         }
         if (reserva.getServicio() != null) {
+            dto.servicioId = reserva.getServicio().getIdServicio();
+            dto.precioServicio = reserva.getServicio().getPrecio();
             dto.nombreServicio = reserva.getServicio().getNombre();
         }
         return dto;
@@ -51,6 +57,15 @@ public class ReservaResponseDTO {
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
+
+    public Long getUsuarioId() { return usuarioId; }
+    public void setUsuarioId(Long usuarioId) { this.usuarioId = usuarioId; }
+
+    public Long getServicioId() { return servicioId; }
+    public void setServicioId(Long servicioId) { this.servicioId = servicioId; }
+
+    public Double getPrecioServicio() { return precioServicio; }
+    public void setPrecioServicio(Double precioServicio) { this.precioServicio = precioServicio; }
 
     public String getNombreUsuario() { return nombreUsuario; }
     public void setNombreUsuario(String nombreUsuario) { this.nombreUsuario = nombreUsuario; }

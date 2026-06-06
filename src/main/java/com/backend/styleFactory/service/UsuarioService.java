@@ -2,6 +2,7 @@ package com.backend.styleFactory.service;
 
 import com.backend.styleFactory.DTO.UsuarioRequestDTO;
 import com.backend.styleFactory.DTO.UsuarioResponseDTO;
+import com.backend.styleFactory.model.RolUsuario;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.UsuarioRepository;
 import org.springframework.stereotype.Service;
@@ -75,11 +76,17 @@ public class UsuarioService {
      * @return UsuarioResponseDTO actualizado.
      * @throws RuntimeException si el usuario no existe o si el correo ya está en uso.
      */
-    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto) {
+    public UsuarioResponseDTO actualizarUsuario(Long id, UsuarioRequestDTO dto, Usuario actor) {
+        if (actor == null) {
+            throw new RuntimeException("Usuario no autenticado");
+        }
+        if (actor.getRol() != RolUsuario.ADMIN && !actor.getId().equals(id)) {
+            throw new RuntimeException("No tienes permiso para modificar este usuario");
+        }
+
         Usuario usuario = usuarioRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado con id: " + id));
 
-        // Validación de correo duplicado (excluyendo al propio usuario)
         if (!usuario.getCorreo().equals(dto.getCorreo()) &&
                 usuarioRepository.existsByCorreo(dto.getCorreo())) {
             throw new RuntimeException("El correo ya está en uso por otro usuario");
@@ -91,7 +98,7 @@ public class UsuarioService {
         if (dto.getContrasena() != null && !dto.getContrasena().isBlank()) {
             usuario.setContrasena(dto.getContrasena());
         }
-        if (dto.getRol() != null) {
+        if (actor.getRol() == RolUsuario.ADMIN && dto.getRol() != null) {
             usuario.setRol(dto.getRol());
         }
 

@@ -2,8 +2,10 @@ package com.backend.styleFactory.service;
 
 import com.backend.styleFactory.DTO.ReservaRequestDTO;
 import com.backend.styleFactory.DTO.ReservaResponseDTO;
+import com.backend.styleFactory.DTO.SlotOcupadoDTO;
 import com.backend.styleFactory.model.Empleado;
 import com.backend.styleFactory.model.Reserva;
+import com.backend.styleFactory.model.RolUsuario;
 import com.backend.styleFactory.model.Servicio;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.repository.EmpleadoRepository;
@@ -72,6 +74,7 @@ public class ReservaService {
 
         validarEntidadesActivas(empleado, servicio);
         validarReglasHorario(dto.getFecha(), dto.getHora(), servicio);
+        validarSinSolapamiento(dto.getEmpleadoId(), dto.getFecha(), dto.getHora(), servicio, null);
 
         String estado = dto.getEstado();
         if (estado == null || estado.isBlank()) {
@@ -95,6 +98,7 @@ public class ReservaService {
 
         validarEntidadesActivas(empleado, servicio);
         validarReglasHorario(dto.getFecha(), dto.getHora(), servicio);
+        validarSinSolapamiento(dto.getEmpleadoId(), dto.getFecha(), dto.getHora(), servicio, id);
 
         existente.setFecha(dto.getFecha());
         existente.setHora(dto.getHora());
@@ -114,12 +118,28 @@ public class ReservaService {
         reservaRepository.deleteById(id);
     }
 
+    public List<SlotOcupadoDTO> findSlotsOcupados(Long empleadoId, LocalDate fecha) {
+        if (empleadoId == null || fecha == null) {
+            throw new RuntimeException("empleadoId y fecha son obligatorios");
+        }
+        return reservaRepository.findByEmpleado_IdAndFecha(empleadoId, fecha).stream()
+                .filter(r -> r.getEstado() != null && !"CANCELADA".equalsIgnoreCase(r.getEstado()))
+                .map(r -> new SlotOcupadoDTO(
+                        r.getHora(),
+                        duracionMinutosServicio(r.getServicio())))
+                .collect(Collectors.toList());
+    }
+
     /**
-     * Actualiza solo el estado de una reserva (gestión admin sin revalidar horario).
+     * Actualiza el estado de una reserva. Los administradores gestionan cualquier transición;
+     * los clientes solo pueden cancelar sus propias reservas activas.
      */
-    public ReservaResponseDTO updateEstado(Long id, String nuevoEstado) {
+    public ReservaResponseDTO updateEstado(Long id, String nuevoEstado, Usuario actor) {
         if (nuevoEstado == null || nuevoEstado.isBlank()) {
             throw new RuntimeException("El estado es obligatorio");
+        }
+        if (actor == null) {
+            throw new RuntimeException("Usuario no autenticado");
         }
 
         String estadoNormalizado = nuevoEstado.trim().toUpperCase();
@@ -130,8 +150,58 @@ public class ReservaService {
         Reserva reserva = reservaRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Reserva no encontrada con id: " + id));
 
+        if (actor.getRol() != RolUsuario.ADMIN) {
+            if (reserva.getUsuario() == null || !actor.getId().equals(reserva.getUsuario().getId())) {
+                throw new RuntimeException("No tienes permiso para modificar esta reserva");
+            }
+            if (!"CANCELADA".equals(estadoNormalizado)) {
+                throw new RuntimeException("Solo puedes cancelar tu reserva");
+            }
+            String estadoActual = reserva.getEstado() != null ? reserva.getEstado().toUpperCase() : "";
+            if ("COMPLETADA".equals(estadoActual)) {
+                throw new RuntimeException("No se puede cancelar una reserva completada");
+            }
+            if ("CANCELADA".equals(estadoActual)) {
+                throw new RuntimeException("La reserva ya está cancelada");
+            }
+        }
+
         reserva.setEstado(estadoNormalizado);
         return ReservaResponseDTO.desde(reservaRepository.save(reserva));
+    }
+
+    private void validarSinSolapamiento(Long empleadoId, LocalDate fecha, LocalTime hora,
+                                        Servicio servicio, Long reservaExcluirId) {
+        int duracionNueva = duracionMinutosServicio(servicio);
+        int inicioNueva = hora.toSecondOfDay() / 60;
+        int finNueva = inicioNueva + duracionNueva;
+
+        List<Reserva> existentes = reservaRepository.findByEmpleado_IdAndFecha(empleadoId, fecha);
+        for (Reserva existente : existentes) {
+            if (reservaExcluirId != null && reservaExcluirId.equals(existente.getId())) {
+                continue;
+            }
+            if (existente.getEstado() != null && "CANCELADA".equalsIgnoreCase(existente.getEstado())) {
+                continue;
+            }
+            LocalTime horaExistente = existente.getHora();
+            if (horaExistente == null) {
+                continue;
+            }
+            int duracionExistente = duracionMinutosServicio(existente.getServicio());
+            int inicioExistente = horaExistente.toSecondOfDay() / 60;
+            int finExistente = inicioExistente + duracionExistente;
+            if (inicioNueva < finExistente && finNueva > inicioExistente) {
+                throw new RuntimeException("El estilista ya tiene una reserva en ese horario");
+            }
+        }
+    }
+
+    private int duracionMinutosServicio(Servicio servicio) {
+        if (servicio == null || servicio.getDuracionMinutos() == null || servicio.getDuracionMinutos() <= 0) {
+            return 60;
+        }
+        return servicio.getDuracionMinutos();
     }
 
     private void validarEntidadesActivas(Empleado empleado, Servicio servicio) {

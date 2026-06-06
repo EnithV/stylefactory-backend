@@ -2,15 +2,18 @@ package com.backend.styleFactory.controller;
 
 import com.backend.styleFactory.DTO.ReservaRequestDTO;
 import com.backend.styleFactory.DTO.ReservaResponseDTO;
+import com.backend.styleFactory.DTO.SlotOcupadoDTO;
 import com.backend.styleFactory.model.Usuario;
 import com.backend.styleFactory.service.ReservaService;
 import jakarta.validation.Valid;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -28,34 +31,27 @@ public class ReservaController {
         this.reservaService = reservaService;
     }
 
-    /**
-     * Obtiene todas las reservas registradas.
-     *
-     * @return Lista de reservas.
-     */
     @GetMapping
     public ResponseEntity<List<ReservaResponseDTO>> obtenerTodos() {
         return ResponseEntity.ok(reservaService.findAll());
     }
 
-    /**
-     * Reservas del usuario autenticado (área personal del cliente).
-     */
     @GetMapping("/mis-reservas")
     public ResponseEntity<List<ReservaResponseDTO>> misReservas() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        if (usuario == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         return ResponseEntity.ok(reservaService.findByUsuarioId(usuario.getId()));
     }
 
-    /**
-     * Busca una reserva por su identificador.
-     *
-     * @param id ID de la reserva.
-     * @return Reserva encontrada o 404 si no existe.
-     */
+    @GetMapping("/ocupadas")
+    public ResponseEntity<List<SlotOcupadoDTO>> slotsOcupados(
+            @RequestParam Long empleadoId,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha) {
+        return ResponseEntity.ok(reservaService.findSlotsOcupados(empleadoId, fecha));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<ReservaResponseDTO> obtenerPorId(@PathVariable Long id) {
         ReservaResponseDTO dto = reservaService.findById(id);
@@ -63,24 +59,16 @@ public class ReservaController {
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Crea una nueva reserva a partir de los datos proporcionados.
-     *
-     * @param dto Datos de la reserva (fecha, hora, usuario, empleado, servicio).
-     * @return Reserva creada con estado 201.
-     */
     @PostMapping
     public ResponseEntity<ReservaResponseDTO> crear(@Valid @RequestBody ReservaRequestDTO dto) {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        dto.setUsuarioId(usuario.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(reservaService.save(dto));
     }
 
-    /**
-     * Actualiza los datos de una reserva existente.
-     *
-     * @param id  ID de la reserva a modificar.
-     * @param dto Nuevos datos de la reserva.
-     * @return Reserva actualizada o 404 si no existe.
-     */
     @PutMapping("/{id}")
     public ResponseEntity<ReservaResponseDTO> actualizar(@PathVariable Long id,
                                                          @Valid @RequestBody ReservaRequestDTO dto) {
@@ -89,25 +77,28 @@ public class ReservaController {
         return ResponseEntity.ok(actualizado);
     }
 
-    /**
-     * Cambia únicamente el estado de una reserva (panel admin).
-     */
     @PatchMapping("/{id}/estado")
     public ResponseEntity<ReservaResponseDTO> actualizarEstado(@PathVariable Long id,
                                                                @RequestBody Map<String, String> body) {
+        Usuario usuario = obtenerUsuarioAutenticado();
+        if (usuario == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         String estado = body != null ? body.get("estado") : null;
-        return ResponseEntity.ok(reservaService.updateEstado(id, estado));
+        return ResponseEntity.ok(reservaService.updateEstado(id, estado, usuario));
     }
 
-    /**
-     * Elimina una reserva por su identificador.
-     *
-     * @param id ID de la reserva a eliminar.
-     * @return Respuesta sin contenido (204).
-     */
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Long id) {
         reservaService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Usuario obtenerUsuarioAutenticado() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !(auth.getPrincipal() instanceof Usuario usuario)) {
+            return null;
+        }
+        return usuario;
     }
 }

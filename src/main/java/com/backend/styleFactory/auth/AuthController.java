@@ -55,7 +55,7 @@ public class AuthController {
                 request.getCorreo(),
                 request.getTelefono() != null ? request.getTelefono() : "",
                 passwordEncoder.encode(request.getContrasena()),
-                request.getRol() != null ? request.getRol() : RolUsuario.CLIENTE,
+                RolUsuario.CLIENTE,
                 true
         );
 
